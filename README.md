@@ -8,3 +8,9 @@ I would love if people sent me examples that I can upload along with the ones I 
 I'm going to try and see if I can get this added the the MCAD library.
 
 [thingiverse page here](https://www.thingiverse.com/thing:2419664)
+
+### Examples
+
+<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/mainminkowski.png" width="100%" align="left"> 
+<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/InOutminkowski.png" width="100%" align="left"> 
+<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/round2d.png" width="100%" align="left"> 
