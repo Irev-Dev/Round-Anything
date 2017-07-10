@@ -2,7 +2,7 @@
 // Version: 1.0
 // Author: IrevDev
 // Copyright: 2017
-// License: LGPL 2.1 or later
+// License: GPL 3
 
 /*
 ---Modules
