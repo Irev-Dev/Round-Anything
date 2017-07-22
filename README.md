@@ -20,10 +20,13 @@ I would love if people sent me examples that I can upload along with the ones I 
 ### Examples
 ##### minkowsikRound();
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/mainminkowski.png" width="100%" align="left"> 
+
 ##### minkowsikInsideRound(); & minkowsikOutsideRound();
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/InOutminkowski.png" width="100%" align="left"> 
+
 ##### round2d();
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/round2d.png" width="100%" align="left"> 
+
 ##### polyRound();
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/PolyRoundexample1.png" width="100%" align="left"> 
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/PolyRoundexample3fn.png" width="100%" align="left"> 
