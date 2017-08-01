@@ -28,7 +28,7 @@ I would love if people sent me examples that I can upload along with the ones I 
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/round2d.png" width="100%" align="left"> 
 
 ##### polyRound();
-<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/PolyRoundexample1.png" width="100%" align="left"> 
+<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/example1.png" width="100%" align="left"> 
 <img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/PolyRoundexample3fn.png" width="100%" align="left"> 
-<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/PolyRoundexample2.png" width="100%" align="left"> 
+<img src="https://github.com/Irev-Dev/Round-Anything/blob/master/images/example2.png" width="100%" align="left"> 
 
