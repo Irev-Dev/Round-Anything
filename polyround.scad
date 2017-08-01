@@ -7,7 +7,7 @@
 
 
 //uncomment to see the examples
-examples();
+//examples();
 
 module examples(){
     //Example of how a parametric part might be designed with this tool 
@@ -24,9 +24,7 @@ module examples(){
     //Example of features 2
     //     1        2       3       4          5        6     
     b=[[-4,0,1],[5,3,1.5],[0,7,0],[8,7,10],[20,20,1],[10,0,10]]; //points
-    echo("example 2", polyRound(b,1));
-   // polygon(polyRound(b,30));/*polycarious() will make the same shape but doesn't have radii conflict handling*/ //
- polygon(polycarious(b,30));
+   // polygon(polyRound(b,30));/*polycarious() will make the same shape but doesn't have radii conflict handling*/ //polygon(polycarious(b,30));
     %translate([0,0,0.2])polygon(getpoints(b));//transparent copy of the polgon without rounding
 
     
