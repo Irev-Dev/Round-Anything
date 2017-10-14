@@ -127,6 +127,21 @@ module examples(){
         polygon(polyRound(aSquare,20));
         translate([10,12,0])polygon(polyRound(nutCapture,20));
     }        
+    
+    translate([70,-52,0]){
+        a=mirrorPoints(ex,0,[1,0]);
+        polygon(polyRound(a,20));
+    }
+
+    
+    translate([0,-90,0]){
+        r_extrude(3,0.5*$t,0.5*$t,100)polygon(polyRound(b,30));
+        #translate([7,4,3])r_extrude(3,-0.5,0.95,100)circle(1,$fn=30);
+    }
+
+    translate([-30,-90,0])
+    shell2d(-0.5,0,0)polygon(polyRound(b,30));
+    
 }
 {function polyRound(radiipoints,fn=5,mode=0)=
 /*  Takes a list of radii points of the format [x,y,radius] and rounds each point
@@ -155,7 +170,7 @@ module examples(){
 	rp[2][2]==0&&debug==1?0://if debug is enabled and the radius is 0 return 0
 	let(
     p=getpoints(rp), //get list of points
-    r=[for(i=[1:3]) rp[i][2]],//get the centre 3 radii
+    r=[for(i=[1:3]) abs(rp[i][2])],//get the centre 3 radii
     //start by determining what the radius should be at point 3
     //find angles at points 2 , 3 and 4
     a2=cosineRuleAngle(p[0],p[1],p[2]),
@@ -353,6 +368,43 @@ module examples(){
         )
 		[h*cos(a+rot)+tran.x,h*sin(a+rot)+tran.y,i.z]//calculate the point's new position
 	];}
+module round2d(OR=3,IR=1){
+    offset(OR)offset(-IR-OR)offset(IR)children();
+}
+module shell2d(o1,OR=0,IR=0,o2=0){
+	difference(){
+		round2d(OR,IR)offset(max(o1,o2))children(0);//original 1st child forms the outside of the shell
+		round2d(IR,OR)difference(){//round the inside cutout
+			offset(min(o1,o2))children(0);//shrink the 1st child to form the inside of the shell 
+			if($children>1)for(i=[1:$children-1])children(i);//second child and onwards is used to add material to inside of the shell
+		}
+	}
+}
+module internalSq(size,r,center=0){
+    tran=center==1?[0,0]:size/2;
+    translate(tran){
+        square(size,true);
+        offs=sin(45)*r;
+        for(i=[-1,1],j=[-1,1])translate([(size.x/2-offs)*i,(size.y/2-offs)*j])circle(r);
+        }
+}
+module r_extrude(ln,r1=0,r2=0,fn=30){
+    n1=sign(r1);n2=sign(r2);
+    r1=abs(r1);r2=abs(r2);
+    translate([0,0,r1])linear_extrude(ln-r1-r2)children();
+    for(i=[0:1/fn:1]){
+        translate([0,0,i*r1])linear_extrude(r1/fn)offset(n1*sqrt(sq(r1)-sq(r1-i*r1))-n1*r1)children();
+        translate([0,0,ln-r2+i*r2])linear_extrude(r2/fn)offset(n2*sqrt(sq(r2)-sq(i*r2))-n2*r2)children();
+    }
+}
+{function mirrorPoints(b,rot=0,atten=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
+ let(
+ a=moveRadiiPoints(b,[0,0],-rot),
+ temp3=[for(i=[0+atten[0]:len(a)-1-atten[1]]) [a[i][0],-a[i][1],a[i][2]]],
+ temp=moveRadiiPoints(temp3,[0,0],rot),
+ temp2=revList(temp3)
+ )    
+  concat(b,temp2);}
 {function invtan(run,rise)=
     let(a=abs(atan(rise/run)))
     rise==0&&run>0?0:rise>0&&run>0?a:rise>0&&run==0?90:rise>0&&run<0?180-a:rise==0&&run<0?180:rise<0&&run<0?a+180:rise<0&&run==0?270:rise<0&&run>0?360-a:"error";}
@@ -367,7 +419,7 @@ module examples(){
 	idx >= len(list) ? result : sum(list, idx + 1, result + list[idx]);}
 function sq(x)=x*x;
 function getGradient(p1,p2)=(p2.y-p1.y)/(p2.x-p1.x);
-function getAngle(p1,p2)=invtan(p2[0]-p1[0],p2[1]-p1[1]);
+function getAngle(p1,p2)=p1==p2?0:invtan(p2[0]-p1[0],p2[1]-p1[1]);
 function getMidpoint(p1,p2)=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2]; //returns the midpoint of two points
 function pointDist(p1,p2)=sqrt(abs(sq(p1[0]-p2[0])+sq(p1[1]-p2[1]))); //returns the distance between two points
 function isColinear(p1,p2,p3)=getGradient(p1,p2)==getGradient(p2,p3)?1:0;//return 1 if 3 points are colinear
