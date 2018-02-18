@@ -15,10 +15,15 @@ module examples(){
     slotPosition=8;
     minR=1.5;       farcornerR=6;
     internalR=3;
-    points=[[0,0,minR],[0,height,minR],[slotPosition,height,minR],[slotPosition,height-slotH,internalR],
-    [slotPosition+slotW,height-slotH,internalR],[slotPosition+slotW,height,minR],[width,height,minR],[width,0,farcornerR]];
+    points=[[0,0,farcornerR],[0,height,minR],[slotPosition,height,minR],[slotPosition,height-slotH,internalR],
+    [slotPosition+slotW,height-slotH,internalR],[slotPosition+slotW,height,minR],[width,height,minR],[width,0,minR]];
+    points2=[[0,0,farcornerR],["l",height,minR],[slotPosition,"l",minR],["l",height-slotH,internalR],
+    [slotPosition+slotW,"l",internalR],["l",height,minR],[width,"l",minR],["l",height*0.2,minR],[45,0,minR+5,"ayra"]];//,["l",0,minR]];
+    echo(processRadiiPoints(points2));
     translate([-25,0,0])polygon(polyRound(points,5));
     %translate([-25,0,0.2])polygon(getpoints(points));//transparent copy of the polgon without rounding
+    translate([-50,0,0])polygon(polyRound(points2,5));
+    %translate([-50,0,0.2])polygon(getpoints(processRadiiPoints(points2)));//transparent copy of the polgon without rounding
     //Example of features 2
     //     1        2       3       4          5        6     
     b=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]]; //points
@@ -155,12 +160,13 @@ module examples(){
 		Lp=len(p),
 		//remove the middle point of any three colinear points
 		newrp=[for(i=[0:len(p)-1]) if(isColinear(p[wrap(i-1,Lp)],p[wrap(i+0,Lp)],p[wrap(i+1,Lp)])==0||p[wrap(i+0,Lp)].z!=0)radiipoints[wrap(i+0,Lp)] ],
-		temp=[for(i=[0:len(newrp)-1]) //for each point in the radii array
+        newrp2=processRadiiPoints(newrp),
+		temp=[for(i=[0:len(newrp2)-1]) //for each point in the radii array
             let(
-            thepoints=[for(j=[-getpoints:getpoints])newrp[wrap(i+j,len(newrp))]],//collect 5 radii points
+            thepoints=[for(j=[-getpoints:getpoints])newrp2[wrap(i+j,len(newrp2))]],//collect 5 radii points
             temp2=mode==2?round3points(thepoints,fn):round5points(thepoints,fn,mode)
             )
-			mode==1?temp2:newrp[i][2]==0?[[newrp[i][0],newrp[i][1]]]: //return the original point if the radius is 0
+			mode==1?temp2:newrp2[i][2]==0?[[newrp2[i][0],newrp2[i][1]]]: //return the original point if the radius is 0
             CentreN2PointsArc(temp2[0],temp2[1],temp2[2],0,fn) //return the arc if everything is normal
             ]
         )
@@ -398,6 +404,7 @@ module r_extrude(ln,r1=0,r2=0,fn=30){
     }
 }
 {function mirrorPoints(b,rot=0,atten=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
+
  let(
  a=moveRadiiPoints(b,[0,0],-rot),
  temp3=[for(i=[0+atten[0]:len(a)-1-atten[1]]) [a[i][0],-a[i][1],a[i][2]]],
@@ -405,6 +412,94 @@ module r_extrude(ln,r1=0,r2=0,fn=30){
  temp2=revList(temp3)
  )    
   concat(b,temp2);}
+function processRadiiPoints(rp)=
+    [for(i=[0:len(rp)-1]) processRadiiPoints2(rp,i)];
+function processRadiiPoints2(list,end=0,idx=0,result=0)=
+    idx>=end+1?result:processRadiiPoints2(list,end,idx+1,relationalRadiiPoints(result,list[idx]));
+function cosineRuleBside(a,c,C)=c*cos(C)-sqrt(sq(a)+sq(c)+sq(cos(C))-sq(c));
+function absArelR(po,pn)=
+        let(
+        th2=atan(po[1]/po[0]),
+        r2=sqrt(sq(po[0])+sq(po[1])),
+        r3=cosineRuleBside(r2,pn[1],th2-pn[0])
+        )
+        [cos(pn[0])*r3,sin(pn[0])*r3,pn[2]];
+function relationalRadiiPoints(po,pi)=
+    let(
+        p0=pi[0],
+        p1=pi[1],
+        p2=pi[2],
+        pv0=pi[3][0],
+        pv1=pi[3][1],
+        pt0=pi[3][2],
+        pt1=pi[3][3],
+        pn=
+            (pv0=="y"&&pv1=="x")||(pv0=="r"&&pv1=="a")||(pv0=="y"&&pv1=="a")||(pv0=="x"&&pv1=="a")||(pv0=="y"&&pv1=="r")||(pv0=="x"&&pv1=="r")?
+                [p1,p0,p2,concat(pv1,pv0,pt1,pt0)]:
+                [p0,p1,p2,concat(pv0,pv1,pt0,pt1)],
+        n0=pn[0],
+        n1=pn[1],
+        n2=pn[2],
+        nv0=pn[3][0],
+        nv1=pn[3][1],
+        nt0=pn[3][2],
+        nt1=pn[3][3],
+        temp=
+            pn[0]=="l"?
+                [po[0],pn[1],pn[2]]
+            :pn[1]=="l"?
+                [pn[0],po[1],pn[2]]
+            :nv0==undef?
+                [pn[0],pn[1],pn[2]]//abs x, abs y as default when undefined
+            :nv0=="a"?
+                nv1=="r"?
+                    nt0=="a"?
+                        nt1=="a"||nt1==undef?
+                            [cos(n0)*n1,sin(n0)*n1,n2]//abs angle, abs radius
+                        :absArelR(po,pn)//abs angle rel radius
+                    :nt1=="r"||nt1==undef?
+                        [po[0]+cos(pn[0])*pn[1],po[1]+sin(pn[0])*pn[1],pn[2]]//rel angle, rel radius 
+                    :[pn[0],pn[1],pn[2]]//rel angle, abs radius
+                :nv1=="x"?
+                    nt0=="a"?
+                        nt1=="a"||nt1==undef?
+                            [pn[1],pn[1]*tan(pn[0]),pn[2]]//abs angle, abs x
+                        :[po[0]+pn[1],(po[0]+pn[1])*tan(pn[0]),pn[2]]//abs angle rel x
+                    :nt1=="r"||nt1==undef?
+                        [po[0]+pn[1],po[1]+pn[1]*tan(pn[0]),pn[2]]//rel angle, rel x 
+                    :[pn[1],po[1]+(pn[1]-po[0])*tan(pn[0]),pn[2]]//rel angle, abs x
+                :nt0=="a"?
+                    nt1=="a"||nt1==undef?
+                        [pn[1]/tan(pn[0]),pn[1],pn[2]]//abs angle, abs y
+                    :[(po[1]+pn[1])/tan(pn[0]),po[1]+pn[1],pn[2]]//abs angle rel y
+                :nt1=="r"||nt1==undef?
+                    [po[0]+(pn[1]-po[0])/tan(90-pn[0]),po[1]+pn[1],pn[2]]//rel angle, rel y 
+                :[po[0]+(pn[1]-po[1])/tan(pn[0]),pn[1],pn[2]]//rel angle, abs y
+            :nv0=="r"?
+                nv1=="x"?
+                    nt0=="a"?
+                        nt1=="a"||nt1==undef?
+                            [pn[1],sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[2]]//abs radius, abs x
+                        :[po[0]+pn[1],sign(pn[0])*sqrt(sq(pn[0])-sq(po[0]+pn[1])),pn[2]]//abs radius rel x
+                    :nt1=="r"||nt1==undef?
+                        [po[0]+pn[1],po[1]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[2]]//rel radius, rel x 
+                    :[pn[1],po[1]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1]-po[0])),pn[2]]//rel radius, abs x
+                :nt0=="a"?
+                    nt1=="a"||nt1==undef?
+                        [sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[1],pn[2]]//abs radius, abs y
+                    :[sign(pn[0])*sqrt(sq(pn[0])-sq(po[1]+pn[1])),po[1]+pn[1],pn[2]]//abs radius rel y
+                :nt1=="r"||nt1==undef?
+                    [po[0]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),po[1]+pn[1],pn[2]]//rel radius, rel y 
+                :[po[0]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1]-po[1])),pn[1],pn[2]]//rel radius, abs y
+            :nt0=="a"?
+                nt1=="a"||nt1==undef?
+                    [pn[0],pn[1],pn[2]]//abs x, abs y
+                :[pn[0],po[1]+pn[1],pn[2]]//abs x rel y
+            :nt1=="r"||nt1==undef?
+                [po[0]+pn[0],po[1]+pn[1],pn[2]]//rel x, rel y 
+            :[po[0]+pn[0],pn[1],pn[2]]//rel x, abs y
+            )
+            temp;
 {function invtan(run,rise)=
     let(a=abs(atan(rise/run)))
     rise==0&&run>0?0:rise>0&&run>0?a:rise>0&&run==0?90:rise>0&&run<0?180-a:rise==0&&run<0?180:rise<0&&run<0?a+180:rise<0&&run==0?270:rise<0&&run>0?360-a:"error";}
