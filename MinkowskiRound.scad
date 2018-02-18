@@ -1,8 +1,8 @@
 // Library: MinkowskiRound.scad
 // Version: 1.0
 // Author: IrevDev
-// Copyright: 2017
-// License: GPL 3
+// Copyright: 2020
+// License: MIT
 
 /*
 ---Modules
@@ -38,71 +38,75 @@ Both this modules do the same thing as minkowskiRound() but focus on either insi
 //}//--I rendered this out with a $fn=25 and it took more than 12 hours on my computer
 
 
-   
-
 module round2d(OR=3,IR=1){
-    offset(OR)offset(-IR-OR)offset(IR)children();
+  offset(OR){
+    offset(-IR-OR){
+      offset(IR){
+        children();
+      }
+    }
+  }
 }
 
 module minkowskiRound(OR=1,IR=1,enable=1,cubeSize=[500,500,500]){
-    if(enable==0){//do nothing if not enabled
-        children();
-    } else {
-        minkowski(){//expand the now positive shape back out
-            difference(){//make the negative shape positive again
-                cube(cubeSize-[0.1,0.1,0.1],center=true);
-                minkowski(){//expand the negative shape inwards
-                    difference(){//create a negative of the children
-                        cube(cubeSize,center=true);
-                        minkowski(){//expand the children
-                            children();
-                            sphere(IR);
-                        }
-                    }
-                    sphere(OR+IR);
-                }
+  if(enable==0){//do nothing if not enabled
+    children();
+  } else {
+    minkowski(){//expand the now positive shape back out
+      difference(){//make the negative shape positive again
+        cube(cubeSize-[0.1,0.1,0.1],center=true);
+        minkowski(){//expand the negative shape inwards
+          difference(){//create a negative of the children
+            cube(cubeSize,center=true);
+            minkowski(){//expand the children
+              children();
+              sphere(IR);
             }
-            sphere(OR);
+          }
+          sphere(OR+IR);
         }
+      }
+      sphere(OR);
     }
+  }
 }
 
 module minkowskiOutsideRound(r=1,enable=1,cubeSize=[500,500,500]){
-    if(enable==0){//do nothing if not enabled
-        children();
-    } else {
-        minkowski(){//expand the now positive shape
-            difference(){//make the negative positive
-                cube(cubeSize-[0.1,0.1,0.1],center=true);
-                minkowski(){//expand the negative inwards
-                    difference(){//create a negative of the children
-                        cube(cubeSize,center=true);
-                        children();
-                    }
-                    sphere(r);
-                }
-            }
-            sphere(r);
+  if(enable==0){//do nothing if not enabled
+    children();
+  } else {
+    minkowski(){//expand the now positive shape
+      difference(){//make the negative positive
+        cube(cubeSize-[0.1,0.1,0.1],center=true);
+        minkowski(){//expand the negative inwards
+          difference(){//create a negative of the children
+            cube(cubeSize,center=true);
+            children();
+          }
+          sphere(r);
         }
+      }
+      sphere(r);
     }
+  }
 }
 
 module minkowskiInsideRound(r=1,enable=1,cubeSize=[500,500,500]){
-    if(enable==0){//do nothing if not enabled
-        children();
-    } else {
-        difference(){//make the negative positive again
-            cube(cubeSize-[0.1,0.1,0.1],center=true);
-            minkowski(){//expand the negative shape inwards
-                difference(){//make the expanded children a negative shape
-                    cube(cubeSize,center=true);
-                    minkowski(){//expand the children
-                        children();
-                        sphere(r);
-                    }
-                }
-                sphere(r);
-            }
+  if(enable==0){//do nothing if not enabled
+    children();
+  } else {
+    difference(){//make the negative positive again
+      cube(cubeSize-[0.1,0.1,0.1],center=true);
+      minkowski(){//expand the negative shape inwards
+        difference(){//make the expanded children a negative shape
+          cube(cubeSize,center=true);
+          minkowski(){//expand the children
+            children();
+            sphere(r);
+          }
         }
+        sphere(r);
+      }
     }
+  }
 }
