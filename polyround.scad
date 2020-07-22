@@ -7,7 +7,7 @@
 
 
     
-//examples();
+// examples();
 module examples(){
   //Example of how a parametric part might be designed with this tool 
   width=20;       height=25;
@@ -201,18 +201,26 @@ function polyRound(radiipoints,fn=5,mode=0)=
     mode=1 - Debug, output radius reduction for automatic radius limiting
     mode=2 - No radius limiting*/
   let(
-    getpoints=mode==2?1:2,
     p=getpoints(radiipoints), //make list of coordinates without radii
     Lp=len(p),
-    //remove the middle point of any three colinear points
-    newrp=[
-      for(i=[0:len(p)-1]) if(isColinear(p[wrap(i-1,Lp)],p[wrap(i+0,Lp)],p[wrap(i+1,Lp)])==0||p[wrap(i+0,Lp)].z!=0)radiipoints[wrap(i+0,Lp)] 
+    //remove the middle point of any three colinear points, otherwise adding a radius to the middle of a straigh line causes problems
+    radiiPointsWithoutTrippleColinear=[
+      for(i=[0:len(p)-1]) if(
+        // keep point if it isn't colinear or if the radius is 0
+        !isColinear(
+          p[listWrap(i-1,Lp)],
+          p[listWrap(i+0,Lp)],
+          p[listWrap(i+1,Lp)]
+        )||
+        p[listWrap(i+0,Lp)].z!=0
+      ) radiipoints[listWrap(i+0,Lp)] 
     ],
-    newrp2=processRadiiPoints(newrp),
+    newrp2=processRadiiPoints(radiiPointsWithoutTrippleColinear),
+    plusMinusPointRange=mode==2?1:2,
     temp=[
       for(i=[0:len(newrp2)-1]) //for each point in the radii array
       let(
-        thepoints=[for(j=[-getpoints:getpoints])newrp2[wrap(i+j,len(newrp2))]],//collect 5 radii points
+        thepoints=[for(j=[-plusMinusPointRange:plusMinusPointRange])newrp2[listWrap(i+j,len(newrp2))]],//collect 5 radii points
         temp2=mode==2?round3points(thepoints,fn):round5points(thepoints,fn,mode)
       )
       mode==1?temp2:newrp2[i][2]==0?
@@ -395,7 +403,7 @@ function CWorCCW(p)=
 	let(
     Lp=len(p),
 	  e=[for(i=[0:Lp-1]) 
-      (p[wrap(i+0,Lp)].x-p[wrap(i+1,Lp)].x)*(p[wrap(i+0,Lp)].y+p[wrap(i+1,Lp)].y)
+      (p[listWrap(i+0,Lp)].x-p[listWrap(i+1,Lp)].x)*(p[listWrap(i+0,Lp)].y+p[listWrap(i+1,Lp)].y)
     ]
   )  
   sign(sum(e));
@@ -642,7 +650,7 @@ function pointDist(p1,p2)=sqrt(abs(sq(p1[0]-p2[0])+sq(p1[1]-p2[1]))); //returns 
 function isColinear(p1,p2,p3)=getGradient(p1,p2)==getGradient(p2,p3)?1:0;//return 1 if 3 points are colinear
 module polyline(p) {
   for(i=[0:max(0,len(p)-1)]){
-    line(p[i],p[wrap(i+1,len(p) )]);
+    line(p[i],p[listWrap(i+1,len(p) )]);
   }
 } // polyline plotter
 module line(p1, p2 ,width=0.3) { // single line plotter
@@ -657,7 +665,7 @@ module line(p1, p2 ,width=0.3) { // single line plotter
 }
 
 function getpoints(p)=[for(i=[0:len(p)-1])[p[i].x,p[i].y]];// gets [x,y]list of[x,y,r]list
-function wrap(x,x_max=1,x_min=0) = (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min; // wraps numbers inside boundaries
+function listWrap(x,x_max=1,x_min=0) = (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min; // wraps numbers inside boundaries
 function rnd(a = 1, b = 0, s = []) = 
   s == [] ? 
     (rands(min(a, b), max(   a, b), 1)[0]):(rands(min(a, b), max(a, b), 1, s)[0]); // nice rands wrapper 
