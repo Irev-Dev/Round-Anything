@@ -66,16 +66,16 @@ module experimentalParametricPolyRoundExample() {
 module conflicResolutionExample(){
   //example of radii conflict handling and debuging feature
   function makeRadiiPoints(r1, r2)=[[0,0,0],[0,20,r1],[20,20,r1],[20,0,0]];
-  
+
   // the squre shape being 20 wide, two radii of 10 both fit into the shape (just)
   translate([-25,0,0])polygon(polyRound(makeRadiiPoints(10,10),50));
-  
+
   //radii are too large and are reduced to fit and will be reduce to 10 and 10
   translate([0,0,0])polygon(polyRound(makeRadiiPoints(30,30),50));
-  
+
   //radii are too large again and are reduced to fit, but keep their ratios r1 will go from 10 to 4 and r2 will go from 40 to 16
   translate([25,0,0])polygon(polyRound(makeRadiiPoints(10,40),50));
-  
+
   //mode 2 = no radii limiting
   translate([50,0,0])polygon(polyRound(makeRadiiPoints(15,20),50,mode=2));
 }
@@ -94,6 +94,7 @@ module translateRadiiPointsExample() {
     [boltR,         minT,      0],
     [boltR,         0,         startAndEndRadius],
   ];
+
   negativeNutCapture=translateRadiiPoints(nutCapture(),tran=[5,0]);
   rotatedNegativeNutCapture=translateRadiiPoints(nutCapture(1),tran=[20,5],rot=90);
   aSquare=concat(
@@ -105,23 +106,23 @@ module translateRadiiPointsExample() {
     [[0,10,0]]
   );
   polygon(polyRound(aSquare,20));
-  translate([10,12,0])polygon(polyRound(nutCapture(),20));
+  translate([-5,0,0])polygon(polyRound(nutCapture(),20));
 }
 
 module 2dShellExample(){
   radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
+  shell2d(-0.5)polygon(polyRound(radiiPoints,30));
   translate([0,-10,0])shell2d(-0.5){
-    scale(1)polygon(polyRound(radiiPoints,30));
+    polygon(polyRound(radiiPoints,30));
     translate([8,8])gridpattern(memberW = 0.3, sqW = 1, iter = 17, r = 0.2);
   }
-  shell2d(-0.5)scale(1)polygon(polyRound(radiiPoints,30));
 }
 
 module beamChainExample(){
   function beamPoints(r1,r2,rStart=0,rEnd=0)=[[0,0,rStart],[2,8,0],[5,4,r1],[15,10,r2],[17,2,rEnd]];
 
   // chained lines by themselves
-  {
+  translate(){
     radiiPoints=beamPoints(0,0);
     for(i=[0: len(radiiPoints)]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
     polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
@@ -136,15 +137,15 @@ module beamChainExample(){
   }
   
   // Give make the lines beams with some thickness
-  {
+  translate([0,-7*2,0]){
     radiiPoints=beamPoints(2,1);
-    translate([0,-7*2,0])polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5),20));
+    polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5),20));
   }
 
   // Add an angle to the start of the beam
-  {
+  translate([0,-7*3,0]){
     radiiPoints=beamPoints(2,1);
-    translate([0,-7*3,0])polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
+    polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
   }
 
   // Put a negative radius at the start for transationing to a flat surface
@@ -163,18 +164,18 @@ module beamChainExample(){
   // Attached to the end of the beam chain by dividing the beam paths in forward and return and
   // concat other polygon inbetween
   translate([0,-7*6,0]){
-    ex4=beamPoints(2,1);
-    forwardPath=beamChain(ex4,offset1=0.5,startAngle=-15,mode=2);
-    returnPath=revList(beamChain(ex4,offset1=-0.5,startAngle=-15,mode=2));
+    radiiPoints=beamPoints(2,1);
+    forwardPath=beamChain(radiiPoints,offset1=0.5,startAngle=-15,mode=2);
+    returnPath=revList(beamChain(radiiPoints,offset1=-0.5,startAngle=-15,mode=2));
     entirePath=concat(forwardPath,clipP,returnPath);
     polygon(polyRound(entirePath,20));
   }
 
   // Add transitioning radii into the end polygong
   translate([0,-7*7-2,0]){
-    ex4=beamPoints(2,1,rEnd=3);
-    forwardPath=beamChain(ex4,offset1=0.5,startAngle=-15,mode=2);
-    returnPath=revList(beamChain(ex4,offset1=-0.5,startAngle=-15,mode=2));
+    radiiPoints=beamPoints(2,1,rEnd=3);
+    forwardPath=beamChain(radiiPoints,offset1=0.5,startAngle=-15,mode=2);
+    returnPath=revList(beamChain(radiiPoints,offset1=-0.5,startAngle=-15,mode=2));
     entirePath=concat(forwardPath,clipP,returnPath);
     polygon(polyRound(entirePath,20));
   }

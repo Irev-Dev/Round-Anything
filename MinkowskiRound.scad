@@ -32,10 +32,11 @@ Both this modules do the same thing as minkowskiRound() but focus on either insi
 //    }
 //}
 
-//minkowskiRound(0.5,2,1,[50,50,50])union(){//--example in the thiniverse thumbnail/main image
+// $fn=20;
+// minkowskiRound(0.7,1.5,1,[50,50,50])union(){//--example in the thiniverse thumbnail/main image
 //   cube([6,6,22]);
-//    rotate([30,45,10])cylinder(h=22,d=10);
-//}//--I rendered this out with a $fn=25 and it took more than 12 hours on my computer
+//   rotate([30,45,10])cylinder(h=22,d=10);
+// }//--I rendered this out with a $fn=25 and it took more than 12 hours on my computer
 
 
 module round2d(OR=3,IR=1){
@@ -48,16 +49,16 @@ module round2d(OR=3,IR=1){
   }
 }
 
-module minkowskiRound(OR=1,IR=1,enable=1,cubeSize=[500,500,500]){
+module minkowskiRound(OR=1,IR=1,enable=1,boundingEnvelope=[500,500,500]){
   if(enable==0){//do nothing if not enabled
     children();
   } else {
     minkowski(){//expand the now positive shape back out
       difference(){//make the negative shape positive again
-        cube(cubeSize-[0.1,0.1,0.1],center=true);
+        cube(boundingEnvelope-[0.1,0.1,0.1],center=true);
         minkowski(){//expand the negative shape inwards
           difference(){//create a negative of the children
-            cube(cubeSize,center=true);
+            cube(boundingEnvelope,center=true);
             minkowski(){//expand the children
               children();
               sphere(IR);
@@ -71,16 +72,16 @@ module minkowskiRound(OR=1,IR=1,enable=1,cubeSize=[500,500,500]){
   }
 }
 
-module minkowskiOutsideRound(r=1,enable=1,cubeSize=[500,500,500]){
+module minkowskiOutsideRound(r=1,enable=1,boundingEnvelope=[500,500,500]){
   if(enable==0){//do nothing if not enabled
     children();
   } else {
     minkowski(){//expand the now positive shape
       difference(){//make the negative positive
-        cube(cubeSize-[0.1,0.1,0.1],center=true);
+        cube(boundingEnvelope-[0.1,0.1,0.1],center=true);
         minkowski(){//expand the negative inwards
           difference(){//create a negative of the children
-            cube(cubeSize,center=true);
+            cube(boundingEnvelope,center=true);
             children();
           }
           sphere(r);
@@ -91,15 +92,15 @@ module minkowskiOutsideRound(r=1,enable=1,cubeSize=[500,500,500]){
   }
 }
 
-module minkowskiInsideRound(r=1,enable=1,cubeSize=[500,500,500]){
+module minkowskiInsideRound(r=1,enable=1,boundingEnvelope=[500,500,500]){
   if(enable==0){//do nothing if not enabled
     children();
   } else {
     difference(){//make the negative positive again
-      cube(cubeSize-[0.1,0.1,0.1],center=true);
+      cube(boundingEnvelope-[0.1,0.1,0.1],center=true);
       minkowski(){//expand the negative shape inwards
         difference(){//make the expanded children a negative shape
-          cube(cubeSize,center=true);
+          cube(boundingEnvelope,center=true);
           minkowski(){//expand the children
             children();
             sphere(r);

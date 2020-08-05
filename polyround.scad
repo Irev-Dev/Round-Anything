@@ -180,11 +180,14 @@ function findPoint(ang1,refpoint1,ang2,refpoint2,r=0)=
   )
 	[outputX,outputY,r];
 
-function beamChain(rp,offset1=0,offset2,mode=0,minR=0,startAngle,endAngle)= 
-  /*This function takes a series of radii points and plots points to run along side at a constanit distance, think of it as offset but for line instead of a polygon
-  rp=radii points, offset1&offset2=offset 1&2,minR=min radius, startAngle&2=angle 1&2
+function beamChain(radiiPoints,offset1=0,offset2,mode=0,minR=0,startAngle,endAngle)= 
+  /*This function takes a series of radii points and plots points to run along side at a consistant distance, think of it as offset but for line instead of a polygon
+  radiiPoints=radii points,
+  offset1 & offset2= The two offsets that give the beam it's thickness. When using with mode=2 only offset1 is needed as there is no return path for the polygon
+  minR=min radius, if all of your radii are set properly within the radii points this value can be ignored
+  startAngle & endAngle= Angle at each end of the beam, different mode determine if this angle is relative to the ending legs of the beam or absolute.
   mode=1 - include endpoints startAngle&2 are relative to the angle of the last two points and equal 90deg if not defined
-  mode=2 - endpoints not included
+  mode=2 - Only the forward path is defined, useful for combining the beam with other radii points, see examples for a use-case.
   mode=3 - include endpoints startAngle&2 are absolute from the x axis and are 0 if not defined
   negative radiuses only allowed for the first and last radii points
   
@@ -192,55 +195,55 @@ function beamChain(rp,offset1=0,offset2,mode=0,minR=0,startAngle,endAngle)=
   let(
     offset2undef=offset2==undef?1:0,
     offset2=offset2undef==1?0:offset2,
-    CWorCCW1=sign(offset1)*CWorCCW(rp),
-    CWorCCW2=sign(offset2)*CWorCCW(rp),
+    CWorCCW1=sign(offset1)*CWorCCW(radiiPoints),
+    CWorCCW2=sign(offset2)*CWorCCW(radiiPoints),
     offset1=abs(offset1),
     offset2b=abs(offset2),
-    Lrp3=len(rp)-3,
-    Lrp=len(rp),
+    Lrp3=len(radiiPoints)-3,
+    Lrp=len(radiiPoints),
     startAngle=mode==0&&startAngle==undef?
-      getAngle(rp[0],rp[1])+90:
+      getAngle(radiiPoints[0],radiiPoints[1])+90:
       mode==2&&startAngle==undef?
       0:
       mode==0?
-      getAngle(rp[0],rp[1])+startAngle:
+      getAngle(radiiPoints[0],radiiPoints[1])+startAngle:
       startAngle,
     endAngle=mode==0&&endAngle==undef?
-            getAngle(rp[Lrp-1],rp[Lrp-2])+90:
+            getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2])+90:
         mode==2&&endAngle==undef?
             0:
         mode==0?
-            getAngle(rp[Lrp-1],rp[Lrp-2])+endAngle:
+            getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2])+endAngle:
             endAngle,
-    OffLn1=[for(i=[0:Lrp3]) offset1==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],offset1,minR,mode=CWorCCW1)],
-    OffLn2=[for(i=[0:Lrp3]) offset2==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],offset2b,minR,mode=CWorCCW2)],  
-    Rp1=abs(rp[0].z),
-    Rp2=abs(rp[Lrp-1].z),
-    endP1a=findPoint(getAngle(rp[0],rp[1]),         OffLn1[0],              startAngle,rp[0],     Rp1),
-    endP1b=findPoint(getAngle(rp[Lrp-1],rp[Lrp-2]), OffLn1[len(OffLn1)-1],  endAngle,rp[Lrp-1], Rp2),
-    endP2a=findPoint(getAngle(rp[0],rp[1]),         OffLn2[0],              startAngle,rp[0],     Rp1),
-    endP2b=findPoint(getAngle(rp[Lrp-1],rp[Lrp-2]), OffLn2[len(OffLn1)-1],  endAngle,rp[Lrp-1], Rp2),
+    OffLn1=[for(i=[0:Lrp3]) offset1==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset1,minR,mode=CWorCCW1)],
+    OffLn2=[for(i=[0:Lrp3]) offset2==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset2b,minR,mode=CWorCCW2)],  
+    Rp1=abs(radiiPoints[0].z),
+    Rp2=abs(radiiPoints[Lrp-1].z),
+    endP1a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn1[0],              startAngle,radiiPoints[0],     Rp1),
+    endP1b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn1[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
+    endP2a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn2[0],              startAngle,radiiPoints[0],     Rp1),
+    endP2b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn2[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
     absEnda=getAngle(endP1a,endP2a),
     absEndb=getAngle(endP1b,endP2b),
-    negRP1a=[cos(absEnda)*rp[0].z*10+endP1a.x,        sin(absEnda)*rp[0].z*10+endP1a.y,       0.0],
-    negRP2a=[cos(absEnda)*-rp[0].z*10+endP2a.x,       sin(absEnda)*-rp[0].z*10+endP2a.y,      0.0],
-    negRP1b=[cos(absEndb)*rp[Lrp-1].z*10+endP1b.x,    sin(absEndb)*rp[Lrp-1].z*10+endP1b.y,   0.0],
-    negRP2b=[cos(absEndb)*-rp[Lrp-1].z*10+endP2b.x,   sin(absEndb)*-rp[Lrp-1].z*10+endP2b.y,  0.0],
-    OffLn1b=(mode==0||mode==2)&&rp[0].z<0&&rp[Lrp-1].z<0?
+    negRP1a=[cos(absEnda)*radiiPoints[0].z*10+endP1a.x,        sin(absEnda)*radiiPoints[0].z*10+endP1a.y,       0.0],
+    negRP2a=[cos(absEnda)*-radiiPoints[0].z*10+endP2a.x,       sin(absEnda)*-radiiPoints[0].z*10+endP2a.y,      0.0],
+    negRP1b=[cos(absEndb)*radiiPoints[Lrp-1].z*10+endP1b.x,    sin(absEndb)*radiiPoints[Lrp-1].z*10+endP1b.y,   0.0],
+    negRP2b=[cos(absEndb)*-radiiPoints[Lrp-1].z*10+endP2b.x,   sin(absEndb)*-radiiPoints[Lrp-1].z*10+endP2b.y,  0.0],
+    OffLn1b=(mode==0||mode==2)&&radiiPoints[0].z<0&&radiiPoints[Lrp-1].z<0?
         concat([negRP1a],[endP1a],OffLn1,[endP1b],[negRP1b])
-      :(mode==0||mode==2)&&rp[0].z<0?
+      :(mode==0||mode==2)&&radiiPoints[0].z<0?
         concat([negRP1a],[endP1a],OffLn1,[endP1b])
-      :(mode==0||mode==2)&&rp[Lrp-1].z<0?
+      :(mode==0||mode==2)&&radiiPoints[Lrp-1].z<0?
         concat([endP1a],OffLn1,[endP1b],[negRP1b])
       :mode==0||mode==2?
         concat([endP1a],OffLn1,[endP1b])
       :
         OffLn1,
-    OffLn2b=(mode==0||mode==2)&&rp[0].z<0&&rp[Lrp-1].z<0?
+    OffLn2b=(mode==0||mode==2)&&radiiPoints[0].z<0&&radiiPoints[Lrp-1].z<0?
         concat([negRP2a],[endP2a],OffLn2,[endP2b],[negRP2b])
-      :(mode==0||mode==2)&&rp[0].z<0?
+      :(mode==0||mode==2)&&radiiPoints[0].z<0?
         concat([negRP2a],[endP2a],OffLn2,[endP2b])
-      :(mode==0||mode==2)&&rp[Lrp-1].z<0?
+      :(mode==0||mode==2)&&radiiPoints[Lrp-1].z<0?
         concat([endP2a],OffLn2,[endP2b],[negRP2b])
       :mode==0||mode==2?
         concat([endP2a],OffLn2,[endP2b])
@@ -288,8 +291,8 @@ function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   )
   [for(i=[0:fn]) [cos(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[0],sin(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[1]]];
 
-function translateRadiiPoints(rp,tran=[0,0],rot=0)=
-	[for(i=rp) 
+function translateRadiiPoints(radiiPoints,tran=[0,0],rot=0)=
+	[for(i=radiiPoints) 
 		let(
       a=getAngle([0,0],[i.x,i.y]),//get the angle of the this point
 		  h=pointDist([0,0],[i.x,i.y]) //get the hypotenuse/radius
@@ -307,14 +310,14 @@ module round2d(OR=3,IR=1){
   }
 }
 
-module shell2d(offset1,OR=0,IR=0,offset2=0){
+module shell2d(offset1,offset2=0,minOR=0,minIR=0){
 	difference(){
-		round2d(OR,IR){
+		round2d(minOR,minIR){
       offset(max(offset1,offset2)){
         children(0);//original 1st child forms the outside of the shell
       }
     }
-		round2d(IR,OR){
+		round2d(minIR,minOR){
       difference(){//round the inside cutout
         offset(min(offset1,offset2)){
           children(0);//shrink the 1st child to form the inside of the shell 
@@ -340,11 +343,11 @@ module internalSq(size,r,center=0){
     }
 }
 
-module extrudeWithRadius(ln,r1=0,r2=0,fn=30){
+module extrudeWithRadius(length,r1=0,r2=0,fn=30){
   n1=sign(r1);n2=sign(r2);
   r1=abs(r1);r2=abs(r2);
   translate([0,0,r1]){
-    linear_extrude(ln-r1-r2){
+    linear_extrude(length-r1-r2){
       children();
     }
   }
@@ -356,7 +359,7 @@ module extrudeWithRadius(ln,r1=0,r2=0,fn=30){
         }
       }
     }
-    translate([0,0,ln-r2+i*r2]){
+    translate([0,0,length-r2+i*r2]){
       linear_extrude(r2/fn){
         offset(n2*sqrt(sq(r2)-sq(i*r2))-n2*r2){
           children();
@@ -366,16 +369,16 @@ module extrudeWithRadius(ln,r1=0,r2=0,fn=30){
   }
 }
 
-function mirrorPoints(b,rot=0,atten=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
+function mirrorPoints(radiiPoints,rot=0,endAttenuation=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
   let(
-    a=translateRadiiPoints(b,[0,0],-rot),
-    temp3=[for(i=[0+atten[0]:len(a)-1-atten[1]])
+    a=translateRadiiPoints(radiiPoints,[0,0],-rot),
+    temp3=[for(i=[0+endAttenuation[0]:len(a)-1-endAttenuation[1]])
       [a[i][0],-a[i][1],a[i][2]]
     ],
     temp=translateRadiiPoints(temp3,[0,0],rot),
     temp2=revList(temp3)
   )    
-  concat(b,temp2);
+  concat(radiiPoints,temp2);
 
 function processRadiiPoints(rp)=
   [for(i=[0:len(rp)-1]) 
