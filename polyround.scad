@@ -7,93 +7,8 @@
 
 
     
-//examples();
-module examples(){
-  //Example of how a parametric part might be designed with this tool 
-  width=20;       height=25;
-  slotW=8;        slotH=15;
-  slotPosition=8;
-  minR=1.5;       farcornerR=6;
-  internalR=3;
-  points=[
-    [0,                   0,              farcornerR],
-    [0,                   height,         minR],
-    [slotPosition,        height,         minR],
-    [slotPosition,        height-slotH,   internalR],
-    [slotPosition+slotW,  height-slotH,   internalR],
-    [slotPosition+slotW,  height,         minR],
-    [width,               height,         minR],
-    [width,               0,              minR]
-  ];
-  points2=[
-    [0,                   0,              farcornerR],
-    ["l",                 height,         minR],
-    [slotPosition,        "l",            minR],
-    ["l",                 height-slotH,   internalR],
-    [slotPosition+slotW,  "l",            internalR],
-    ["l",                 height,         minR],
-    [width,               "l",            minR],
-    ["l",                 height*0.2,     minR],
-    [45,                  0,              minR+5,         "ayra"]
-  ];//,["l",0,minR]];
-  echo(processRadiiPoints(points2));
-  translate([-25,0,0]){
-    polygon(polyRound(points,5));
-  }
-  %translate([-25,0,0.2]){
-    polygon(getpoints(points));//transparent copy of the polgon without rounding
-  }
-  translate([-50,0,0]){
-    polygon(polyRound(points2,5));
-  }
-  %translate([-50,0,0.2]){ 
-    polygon(getpoints(processRadiiPoints(points2)));//transparent copy of the polgon without rounding
-  }
-  //Example of features 2
-  //     1        2         3         4          5        6     
-  b=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]]; //points
-  polygon(polyRound(b,30));/*polycarious() will make the same shape but doesn't have radii conflict handling*/ //polygon(polycarious(b,30));
-  %translate([0,0,0.3])polygon(getpoints(b));//transparent copy of the polgon without rounding
-      
-  //Example of features 3
-  //    1          2        3        4         5       6
-  p=[[0,0,1.2],[0,20,1],[15,15,1],[3,10,3],[15,0,1],[6,2,10]];//points
-  a=polyRound(p,5);
-  translate([25,0,0]){
-    polygon(a);
-  }
-  %translate([25,0,0.2]){
-    polygon(getpoints(p));//transparent copy of the polgon without rounding
-  }
-  //example of radii conflict handling and debuging feature
-  r1a=10;			r1b=10;
-  r2a=30;			r2b=30;
-  r3a=10;			r3b=40;
-      r4a=15;         r4b=20;
-  c1=[[0,0,0],[0,20,r1a],[20,20,r1b],[20,0,0]];//both radii fit and don't need to be changed
-  translate([-25,-30,0]){
-    polygon(polyRound(c1,8));
-  }
-  echo(str("c1 debug= ",polyRound(c1,8,mode=1)," all zeros indicates none of the radii were reduced")); 
-  
-  c2=[[0,0,0],[0,20,r2a],[20,20,r2b],[20,0,0]];//radii are too large and are reduced to fit
-  translate([0,-30,0]){
-    polygon(polyRound(c2,8));
-  }
-  echo(str("c2 debug= ",polyRound(c2,8,mode=1)," 2nd and 3rd radii reduced by 20mm i.e. from 30 to 10mm radius"));
-  
-  c3=[[0,0,0],[0,20,r3a],[20,20,r3b],[20,0,0]];//radii are too large again and are reduced to fit, but keep their ratios
-  translate([25,-30,0]){
-    polygon(polyRound(c3,8));
-  }
-  echo(str("c3 debug= ",polyRound(c3,8,mode=1)," 2nd and 3rd radii reduced by 6 and 24mm respectively"));
-  //resulting in radii of 4 and 16mm, 
-  //notice the ratio from the orginal radii stays the same r3a/r3b = 10/40 = 4/16
-      c4=[[0,0,0],[0,20,r4a],[20,20,r4b],[20,0,0]];//radii are too large again but not corrected this time
-  translate([50,-30,0]){
-    polygon(polyRound(c4,8,mode=2));//mode 2 = no radii limiting
-  }
-      
+// testingInternals();
+module testingInternals(){
   //example of rounding random points, this has no current use but is a good demonstration
   random=[for(i=[0:20])[rnd(0,50),rnd(0,50),/*rnd(0,30)*/1000]];
   R =polyRound(random,7);
@@ -123,7 +38,7 @@ module examples(){
   radius=6;
   radiipoints=[[0,0,0],[10,20,radius],[20,0,0]];
   tangentsNcen=round3points(radiipoints);
-  translate([100,0,0]){
+  translate([10,0,0]){
     for(i=[0:2]){
       color("red")translate(getpoints(radiipoints)[i])circle(1);//plots the 3 input points
       color("cyan")translate(tangentsNcen[i])circle(1);//plots the two tangent poins and the circle centre
@@ -131,67 +46,6 @@ module examples(){
     translate([tangentsNcen[2][0],tangentsNcen[2][1],-0.2])circle(r=radius,$fn=25);//draws the cirle
     %polygon(getpoints(radiipoints));//draws a polygon
   }
-      
-  //for(i=[0:len(b2)-1]) translate([b2[i].x,b2[i].y,2])#circle(0.2);
-  ex=[[0,0,-1],[2,8,0],[5,4,3],[15,10,0.5],[10,2,1]];
-  translate([15,-50,0]){
-    ang=55;
-    minR=0.2;
-    rotate([0,0,ang+270])translate([0,-5,0])square([10,10],true);
-    clipP=[[9,1,0],[9,0,0],[9.5,0,0],[9.5,1,0.2],[10.5,1,0.2],[10.5,0,0],[11,0,0],[11,1,0]];
-    a=RailCustomiser(ex,o1=0.5,minR=minR,a1=ang-90,a2=0,mode=2);
-    b=revList(RailCustomiser(ex,o1=-0.5,minR=minR,a1=ang-90,a2=0,mode=2));
-    points=concat(a,clipP,b);
-    points2=concat(ex,clipP,b);
-    polygon(polyRound(points,20));
-    //%polygon(polyRound(points2,20));
-  }
-  
-  //the following exapmle shows how the offsets in RailCustomiser could be used to makes shells
-  translate([-20,-60,0]){
-      for(i=[-9:0.5:1])polygon(polyRound(RailCustomiser(ex,o1=i-0.4,o2=i,minR=0.1),20));
-  }
-  
-  // This example shows how a list of points can be used multiple times in the same 
-  nutW=5.5;   nutH=3; boltR=1.6;
-  minT=2;     minR=0.8;
-  nutCapture=[
-    [-boltR,        0,         0],
-    [-boltR,        minT,      0],
-    [-nutW/2,       minT,      minR],
-    [-nutW/2,       minT+nutH, minR],
-    [nutW/2,        minT+nutH, minR],
-    [nutW/2,        minT,      minR],
-    [boltR,         minT,      0],
-    [boltR,         0,         0],
-  ];
-  aSquare=concat(
-    [[0,0,0]],
-    moveRadiiPoints(nutCapture,tran=[5,0],rot=0),
-    [[20,0,0]],
-    moveRadiiPoints(nutCapture,tran=[20,5],rot=90),
-    [[20,10,0]],
-    [[0,10,0]]
-  );
-  echo(aSquare);
-  translate([40,-60,0]){
-    polygon(polyRound(aSquare,20));
-    translate([10,12,0])polygon(polyRound(nutCapture,20));
-  }        
-  
-  translate([70,-52,0]){
-    a=mirrorPoints(ex,0,[1,0]);
-    polygon(polyRound(a,20));
-  }
-
-  
-  translate([0,-90,0]){
-    r_extrude(3,0.5*$t,0.5*$t,100)polygon(polyRound(b,30));
-    #translate([7,4,3])r_extrude(3,-0.5,0.95,100)circle(1,$fn=30);
-  }
-
-  translate([-30,-90,0])
-  shell2d(-0.5,0,0)polygon(polyRound(b,30));
 }
 
 function polyRound(radiipoints,fn=5,mode=0)=
@@ -201,18 +55,26 @@ function polyRound(radiipoints,fn=5,mode=0)=
     mode=1 - Debug, output radius reduction for automatic radius limiting
     mode=2 - No radius limiting*/
   let(
-    getpoints=mode==2?1:2,
     p=getpoints(radiipoints), //make list of coordinates without radii
     Lp=len(p),
-    //remove the middle point of any three colinear points
-    newrp=[
-      for(i=[0:len(p)-1]) if(isColinear(p[wrap(i-1,Lp)],p[wrap(i+0,Lp)],p[wrap(i+1,Lp)])==0||p[wrap(i+0,Lp)].z!=0)radiipoints[wrap(i+0,Lp)] 
+    //remove the middle point of any three colinear points, otherwise adding a radius to the middle of a straigh line causes problems
+    radiiPointsWithoutTrippleColinear=[
+      for(i=[0:len(p)-1]) if(
+        // keep point if it isn't colinear or if the radius is 0
+        !isColinear(
+          p[listWrap(i-1,Lp)],
+          p[listWrap(i+0,Lp)],
+          p[listWrap(i+1,Lp)]
+        )||
+        p[listWrap(i+0,Lp)].z!=0
+      ) radiipoints[listWrap(i+0,Lp)] 
     ],
-    newrp2=processRadiiPoints(newrp),
+    newrp2=processRadiiPoints(radiiPointsWithoutTrippleColinear),
+    plusMinusPointRange=mode==2?1:2,
     temp=[
       for(i=[0:len(newrp2)-1]) //for each point in the radii array
       let(
-        thepoints=[for(j=[-getpoints:getpoints])newrp2[wrap(i+j,len(newrp2))]],//collect 5 radii points
+        thepoints=[for(j=[-plusMinusPointRange:plusMinusPointRange])newrp2[listWrap(i+j,len(newrp2))]],//collect 5 radii points
         temp2=mode==2?round3points(thepoints,fn):round5points(thepoints,fn,mode)
       )
       mode==1?temp2:newrp2[i][2]==0?
@@ -270,11 +132,11 @@ function round3points(rp,fn)=
 	  tangD=r/tan(ang/2),//distance to the tangent point from p2
     circD=r/sin(ang/2),//distance to the circle centre from p2
     //find the angles from the p2 with respect to the postitive x axis
-    a12=getAngle(p[0],p[1]),//angle from point 2 to 1
-    a23=getAngle(p[2],p[1]),//angle from point 2 to 3
+    angleFromPoint1ToPoint2=getAngle(p[0],p[1]),
+    angleFromPoint2ToPoint3=getAngle(p[2],p[1]),
     //find tangent points
-    t12=[p[1][0]-cos(a12)*tangD,p[1][1]-sin(a12)*tangD],//tangent point between points 1&2
-    t23=[p[1][0]-cos(a23)*tangD,p[1][1]-sin(a23)*tangD],//tangent point between points 2&3
+    t12=[p[1][0]-cos(angleFromPoint1ToPoint2)*tangD,p[1][1]-sin(angleFromPoint1ToPoint2)*tangD],//tangent point between points 1&2
+    t23=[p[1][0]-cos(angleFromPoint2ToPoint3)*tangD,p[1][1]-sin(angleFromPoint2ToPoint3)*tangD],//tangent point between points 2&3
     //find circle centre
     tmid=getMidpoint(t12,t23),//midpoint between the two tangent points
     angCen=getAngle(tmid,p[1]),//angle from point 2 to circle centre
@@ -294,11 +156,11 @@ function parallelFollow(rp,thick=4,minR=1,mode=1)=
   	sgn=CWorCCW(rp),//rotation of the three points cw or ccw?let(sgn=mode==0?1:-1)
     circD=mode*sgn*r/sin(ang/2),//distance to the circle centre from p2
     //find the angles from the p2 with respect to the postitive x axis
-    a12=getAngle(p[0],p[1]),//angle from point 2 to 1
-    a23=getAngle(p[2],p[1]),//angle from point 2 to 3
+    angleFromPoint1ToPoint2=getAngle(p[0],p[1]),
+    angleFromPoint2ToPoint3=getAngle(p[2],p[1]),
     //find tangent points
-    t12=[p[1][0]-cos(a12)*tangD,p[1][1]-sin(a12)*tangD],//tangent point between points 1&2
-	  t23=[p[1][0]-cos(a23)*tangD,p[1][1]-sin(a23)*tangD],//tangent point between points 2&3
+    t12=[p[1][0]-cos(angleFromPoint1ToPoint2)*tangD,p[1][1]-sin(angleFromPoint1ToPoint2)*tangD],//tangent point between points 1&2
+	  t23=[p[1][0]-cos(angleFromPoint2ToPoint3)*tangD,p[1][1]-sin(angleFromPoint2ToPoint3)*tangD],//tangent point between points 2&3
     //find circle centre
     tmid=getMidpoint(t12,t23),//midpoint between the two tangent points
     angCen=getAngle(tmid,p[1]),//angle from point 2 to circle centre
@@ -318,74 +180,77 @@ function findPoint(ang1,refpoint1,ang2,refpoint2,r=0)=
   )
 	[outputX,outputY,r];
 
-function RailCustomiser(rp,o1=0,o2,mode=0,minR=0,a1,a2)= 
-  /*This function takes a series of radii points and plots points to run along side at a constanit distance, think of it as offset but for line instead of a polygon
-  rp=radii points, o1&o2=offset 1&2,minR=min radius, a1&2=angle 1&2
-  mode=1 - include endpoints a1&2 are relative to the angle of the last two points and equal 90deg if not defined
-  mode=2 - endpoints not included
-  mode=3 - include endpoints a1&2 are absolute from the x axis and are 0 if not defined
+function beamChain(radiiPoints,offset1=0,offset2,mode=0,minR=0,startAngle,endAngle)= 
+  /*This function takes a series of radii points and plots points to run along side at a consistant distance, think of it as offset but for line instead of a polygon
+  radiiPoints=radii points,
+  offset1 & offset2= The two offsets that give the beam it's thickness. When using with mode=2 only offset1 is needed as there is no return path for the polygon
+  minR=min radius, if all of your radii are set properly within the radii points this value can be ignored
+  startAngle & endAngle= Angle at each end of the beam, different mode determine if this angle is relative to the ending legs of the beam or absolute.
+  mode=1 - include endpoints startAngle&2 are relative to the angle of the last two points and equal 90deg if not defined
+  mode=2 - Only the forward path is defined, useful for combining the beam with other radii points, see examples for a use-case.
+  mode=3 - include endpoints startAngle&2 are absolute from the x axis and are 0 if not defined
   negative radiuses only allowed for the first and last radii points
   
   As it stands this function could probably be tidied a lot, but it works, I'll tidy later*/
   let(
-    o2undef=o2==undef?1:0,
-    o2=o2undef==1?0:o2,
-    CWorCCW1=sign(o1)*CWorCCW(rp),
-    CWorCCW2=sign(o2)*CWorCCW(rp),
-    o1=abs(o1),
-    o2b=abs(o2),
-    Lrp3=len(rp)-3,
-    Lrp=len(rp),
-    a1=mode==0&&a1==undef?
-      getAngle(rp[0],rp[1])+90:
-      mode==2&&a1==undef?
+    offset2undef=offset2==undef?1:0,
+    offset2=offset2undef==1?0:offset2,
+    CWorCCW1=sign(offset1)*CWorCCW(radiiPoints),
+    CWorCCW2=sign(offset2)*CWorCCW(radiiPoints),
+    offset1=abs(offset1),
+    offset2b=abs(offset2),
+    Lrp3=len(radiiPoints)-3,
+    Lrp=len(radiiPoints),
+    startAngle=mode==0&&startAngle==undef?
+      getAngle(radiiPoints[0],radiiPoints[1])+90:
+      mode==2&&startAngle==undef?
       0:
       mode==0?
-      getAngle(rp[0],rp[1])+a1:
-      a1,
-    a2=mode==0&&a2==undef?
-            getAngle(rp[Lrp-1],rp[Lrp-2])+90:
-        mode==2&&a2==undef?
+      getAngle(radiiPoints[0],radiiPoints[1])+startAngle:
+      startAngle,
+    endAngle=mode==0&&endAngle==undef?
+            getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2])+90:
+        mode==2&&endAngle==undef?
             0:
         mode==0?
-            getAngle(rp[Lrp-1],rp[Lrp-2])+a2:
-            a2,
-    OffLn1=[for(i=[0:Lrp3]) o1==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],o1,minR,mode=CWorCCW1)],
-    OffLn2=[for(i=[0:Lrp3]) o2==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],o2b,minR,mode=CWorCCW2)],  
-    Rp1=abs(rp[0].z),
-    Rp2=abs(rp[Lrp-1].z),
-    endP1a=findPoint(getAngle(rp[0],rp[1]),         OffLn1[0],              a1,rp[0],     Rp1),
-    endP1b=findPoint(getAngle(rp[Lrp-1],rp[Lrp-2]), OffLn1[len(OffLn1)-1],  a2,rp[Lrp-1], Rp2),
-    endP2a=findPoint(getAngle(rp[0],rp[1]),         OffLn2[0],              a1,rp[0],     Rp1),
-    endP2b=findPoint(getAngle(rp[Lrp-1],rp[Lrp-2]), OffLn2[len(OffLn1)-1],  a2,rp[Lrp-1], Rp2),
+            getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2])+endAngle:
+            endAngle,
+    OffLn1=[for(i=[0:Lrp3]) offset1==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset1,minR,mode=CWorCCW1)],
+    OffLn2=[for(i=[0:Lrp3]) offset2==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset2b,minR,mode=CWorCCW2)],  
+    Rp1=abs(radiiPoints[0].z),
+    Rp2=abs(radiiPoints[Lrp-1].z),
+    endP1a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn1[0],              startAngle,radiiPoints[0],     Rp1),
+    endP1b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn1[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
+    endP2a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn2[0],              startAngle,radiiPoints[0],     Rp1),
+    endP2b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn2[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
     absEnda=getAngle(endP1a,endP2a),
     absEndb=getAngle(endP1b,endP2b),
-    negRP1a=[cos(absEnda)*rp[0].z*10+endP1a.x,        sin(absEnda)*rp[0].z*10+endP1a.y,       0.0],
-    negRP2a=[cos(absEnda)*-rp[0].z*10+endP2a.x,       sin(absEnda)*-rp[0].z*10+endP2a.y,      0.0],
-    negRP1b=[cos(absEndb)*rp[Lrp-1].z*10+endP1b.x,    sin(absEndb)*rp[Lrp-1].z*10+endP1b.y,   0.0],
-    negRP2b=[cos(absEndb)*-rp[Lrp-1].z*10+endP2b.x,   sin(absEndb)*-rp[Lrp-1].z*10+endP2b.y,  0.0],
-    OffLn1b=(mode==0||mode==2)&&rp[0].z<0&&rp[Lrp-1].z<0?
+    negRP1a=[cos(absEnda)*radiiPoints[0].z*10+endP1a.x,        sin(absEnda)*radiiPoints[0].z*10+endP1a.y,       0.0],
+    negRP2a=[cos(absEnda)*-radiiPoints[0].z*10+endP2a.x,       sin(absEnda)*-radiiPoints[0].z*10+endP2a.y,      0.0],
+    negRP1b=[cos(absEndb)*radiiPoints[Lrp-1].z*10+endP1b.x,    sin(absEndb)*radiiPoints[Lrp-1].z*10+endP1b.y,   0.0],
+    negRP2b=[cos(absEndb)*-radiiPoints[Lrp-1].z*10+endP2b.x,   sin(absEndb)*-radiiPoints[Lrp-1].z*10+endP2b.y,  0.0],
+    OffLn1b=(mode==0||mode==2)&&radiiPoints[0].z<0&&radiiPoints[Lrp-1].z<0?
         concat([negRP1a],[endP1a],OffLn1,[endP1b],[negRP1b])
-      :(mode==0||mode==2)&&rp[0].z<0?
+      :(mode==0||mode==2)&&radiiPoints[0].z<0?
         concat([negRP1a],[endP1a],OffLn1,[endP1b])
-      :(mode==0||mode==2)&&rp[Lrp-1].z<0?
+      :(mode==0||mode==2)&&radiiPoints[Lrp-1].z<0?
         concat([endP1a],OffLn1,[endP1b],[negRP1b])
       :mode==0||mode==2?
         concat([endP1a],OffLn1,[endP1b])
       :
         OffLn1,
-    OffLn2b=(mode==0||mode==2)&&rp[0].z<0&&rp[Lrp-1].z<0?
+    OffLn2b=(mode==0||mode==2)&&radiiPoints[0].z<0&&radiiPoints[Lrp-1].z<0?
         concat([negRP2a],[endP2a],OffLn2,[endP2b],[negRP2b])
-      :(mode==0||mode==2)&&rp[0].z<0?
+      :(mode==0||mode==2)&&radiiPoints[0].z<0?
         concat([negRP2a],[endP2a],OffLn2,[endP2b])
-      :(mode==0||mode==2)&&rp[Lrp-1].z<0?
+      :(mode==0||mode==2)&&radiiPoints[Lrp-1].z<0?
         concat([endP2a],OffLn2,[endP2b],[negRP2b])
       :mode==0||mode==2?
         concat([endP2a],OffLn2,[endP2b])
       :
         OffLn2
     )//end of let()
-  o2undef==1?OffLn1b:concat(OffLn2b,revList(OffLn1b));
+  offset2undef==1?OffLn1b:concat(OffLn2b,revList(OffLn1b));
     
 function revList(list)=//reverse list
   let(Llist=len(list)-1)
@@ -395,7 +260,7 @@ function CWorCCW(p)=
 	let(
     Lp=len(p),
 	  e=[for(i=[0:Lp-1]) 
-      (p[wrap(i+0,Lp)].x-p[wrap(i+1,Lp)].x)*(p[wrap(i+0,Lp)].y+p[wrap(i+1,Lp)].y)
+      (p[listWrap(i+0,Lp)].x-p[listWrap(i+1,Lp)].x)*(p[listWrap(i+0,Lp)].y+p[listWrap(i+1,Lp)].y)
     ]
   )  
   sign(sum(e));
@@ -426,8 +291,8 @@ function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   )
   [for(i=[0:fn]) [cos(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[0],sin(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[1]]];
 
-function moveRadiiPoints(rp,tran=[0,0],rot=0)=
-	[for(i=rp) 
+function translateRadiiPoints(radiiPoints,tran=[0,0],rot=0)=
+	[for(i=radiiPoints) 
 		let(
       a=getAngle([0,0],[i.x,i.y]),//get the angle of the this point
 		  h=pointDist([0,0],[i.x,i.y]) //get the hypotenuse/radius
@@ -436,25 +301,25 @@ function moveRadiiPoints(rp,tran=[0,0],rot=0)=
 	];
 
 module round2d(OR=3,IR=1){
-  offset(OR){
-    offset(-IR-OR){
-      offset(IR){
+  offset(OR,$fn=100){
+    offset(-IR-OR,$fn=100){
+      offset(IR,$fn=100){
         children();
       }
     }
   }
 }
 
-module shell2d(o1,OR=0,IR=0,o2=0){
+module shell2d(offset1,offset2=0,minOR=0,minIR=0){
 	difference(){
-		round2d(OR,IR){
-      offset(max(o1,o2)){
+		round2d(minOR,minIR){
+      offset(max(offset1,offset2)){
         children(0);//original 1st child forms the outside of the shell
       }
     }
-		round2d(IR,OR){
+		round2d(minIR,minOR){
       difference(){//round the inside cutout
-        offset(min(o1,o2)){
+        offset(min(offset1,offset2)){
           children(0);//shrink the 1st child to form the inside of the shell 
         }
         if($children>1){
@@ -478,11 +343,11 @@ module internalSq(size,r,center=0){
     }
 }
 
-module r_extrude(ln,r1=0,r2=0,fn=30){
+module extrudeWithRadius(length,r1=0,r2=0,fn=30){
   n1=sign(r1);n2=sign(r2);
   r1=abs(r1);r2=abs(r2);
   translate([0,0,r1]){
-    linear_extrude(ln-r1-r2){
+    linear_extrude(length-r1-r2){
       children();
     }
   }
@@ -494,7 +359,7 @@ module r_extrude(ln,r1=0,r2=0,fn=30){
         }
       }
     }
-    translate([0,0,ln-r2+i*r2]){
+    translate([0,0,length-r2+i*r2]){
       linear_extrude(r2/fn){
         offset(n2*sqrt(sq(r2)-sq(i*r2))-n2*r2){
           children();
@@ -504,16 +369,16 @@ module r_extrude(ln,r1=0,r2=0,fn=30){
   }
 }
 
-function mirrorPoints(b,rot=0,atten=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
+function mirrorPoints(radiiPoints,rot=0,endAttenuation=[0,0])= //mirrors a list of points about Y, ignoring the first and last points and returning them in reverse order for use with polygon or polyRound
   let(
-    a=moveRadiiPoints(b,[0,0],-rot),
-    temp3=[for(i=[0+atten[0]:len(a)-1-atten[1]])
+    a=translateRadiiPoints(radiiPoints,[0,0],-rot),
+    temp3=[for(i=[0+endAttenuation[0]:len(a)-1-endAttenuation[1]])
       [a[i][0],-a[i][1],a[i][2]]
     ],
-    temp=moveRadiiPoints(temp3,[0,0],rot),
+    temp=translateRadiiPoints(temp3,[0,0],rot),
     temp2=revList(temp3)
   )    
-  concat(b,temp2);
+  concat(radiiPoints,temp2);
 
 function processRadiiPoints(rp)=
   [for(i=[0:len(rp)-1]) 
@@ -642,7 +507,7 @@ function pointDist(p1,p2)=sqrt(abs(sq(p1[0]-p2[0])+sq(p1[1]-p2[1]))); //returns 
 function isColinear(p1,p2,p3)=getGradient(p1,p2)==getGradient(p2,p3)?1:0;//return 1 if 3 points are colinear
 module polyline(p) {
   for(i=[0:max(0,len(p)-1)]){
-    line(p[i],p[wrap(i+1,len(p) )]);
+    line(p[i],p[listWrap(i+1,len(p) )]);
   }
 } // polyline plotter
 module line(p1, p2 ,width=0.3) { // single line plotter
@@ -657,7 +522,7 @@ module line(p1, p2 ,width=0.3) { // single line plotter
 }
 
 function getpoints(p)=[for(i=[0:len(p)-1])[p[i].x,p[i].y]];// gets [x,y]list of[x,y,r]list
-function wrap(x,x_max=1,x_min=0) = (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min; // wraps numbers inside boundaries
+function listWrap(x,x_max=1,x_min=0) = (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min; // wraps numbers inside boundaries
 function rnd(a = 1, b = 0, s = []) = 
   s == [] ? 
     (rands(min(a, b), max(   a, b), 1)[0]):(rands(min(a, b), max(a, b), 1, s)[0]); // nice rands wrapper 
