@@ -6,7 +6,118 @@
 // License: MIT
 
 
-    
+function addZcoord(points,displacement)=[for(i=[0:len(points)-1])[points[i].x,points[i].y, displacement]];
+function translate3Dcoords(points,tran=[0,0,0],mult=[1,1,1])=[for(i=[0:len(points)-1])[
+  (points[i].x*mult.x)+tran.x,
+  (points[i].y*mult.y)+tran.y,
+  (points[i].z*mult.z)+tran.z
+]];
+function offsetPoints(points, offset=0)=
+let(
+  isCWorCCW=sign(offset)*CWorCCW(points)*-1,
+  lp=len(points)
+)
+[for(i=[0:lp-1]) parallelFollow([
+  points[listWrap(i-1,lp)],
+  points[i],
+  points[listWrap(i+1,lp)],
+],thick=offset,mode=isCWorCCW)];
+
+function curvePolygon(points,r,fn,minR=0.01)=
+let(
+  lp=len(points),
+  radii=[for(i=[0:lp-1])points[i].z],
+  isCWorCCWOverall=CWorCCW(points),
+  dir=sign(r),
+  absR=abs(r),
+  fractionOffLp=1-1/fn,
+  allPoints=[for(fraction=[0:1/fn:1])
+    let(
+      iterationOffset=dir*sqrt(sq(absR)-sq(fraction*absR))-dir*absR,
+      theOffsetPoints=offsetPoints(points,iterationOffset),
+      polyRoundOffsetPoints=[for(i=[0:lp-1])
+        let(
+          pointsAboutCurrent=[
+            theOffsetPoints[listWrap(i-1,lp)],
+            theOffsetPoints[i],
+            theOffsetPoints[listWrap(i+1,lp)]
+          ],
+          isCWorCCWLocal=CWorCCW(pointsAboutCurrent),
+          isInternalRadius=(isCWorCCWLocal*isCWorCCWOverall)==-1,
+          // the radius names are only true for positive r,
+          // when are r is negative increasingRadius is actually decreasing and vice-vs
+          // increasingRadiusWithPositiveR is just to verbose of a variable name for my liking
+          increasingRadius=max(radii[i]-iterationOffset, minR),
+          decreasingRadius=max(radii[i]+iterationOffset, minR)
+        )
+        [theOffsetPoints[i].x, theOffsetPoints[i].y, isInternalRadius? increasingRadius: decreasingRadius]
+      ],
+      newPoints=polyRound(polyRoundOffsetPoints,fn)
+    )
+    addZcoord(newPoints,fraction*absR)
+  ],
+  allPointsFlat=flatternArray(allPoints),
+  allLp=len(allPoints),
+  newLp=len(allPoints[0]),
+  loopToSecondLastLayer=allLp-2,
+  sideFaces=[for(layerIndex=[0:loopToSecondLastLayer])let(
+    currentLayeroffset=layerIndex*newLp,
+    nextLayeroffset=(layerIndex+1)*newLp,
+    layerFaces=[for(subLayerIndex=[0:newLp-1])
+      [
+        currentLayeroffset+subLayerIndex, currentLayeroffset + listWrap(subLayerIndex+1,newLp), nextLayeroffset+listWrap(subLayerIndex+1,newLp), nextLayeroffset+subLayerIndex]
+    ]
+  )layerFaces]
+)
+[allPointsFlat,flatternArray(sideFaces),newLp];
+
+function flatternRecursion(array, init=[], currentIndex)=
+let(
+  shouldKickOffRecursion=currentIndex==undef?1:0,
+  isLastIndex=currentIndex+1==len(array)?1:0,
+  result=shouldKickOffRecursion?flatternRecursion(array,[],0):
+    isLastIndex?concat(init,array[currentIndex]):
+    flatternRecursion(array,concat(init,array[currentIndex]),currentIndex+1)
+)
+result;
+function flatternArray(array)=flatternRecursion(array);
+
+function offsetAllFacesBy(array,offset)=[
+  for(faceIndex=[0:len(array)-1])[
+    for(pointIndex=[0:len(array[faceIndex])-1])array[faceIndex][pointIndex]+offset
+  ]
+];
+
+function extrudePolygonWithRadius(points,h=5,r1=1,r2=1,steps=4)=
+let(
+  lp=len(points),
+  top=curvePolygon(points,r1,steps),
+  topPoints=translate3Dcoords(top[0],[0,0,h-r1]),
+  roundedLp=top[2],
+  topFaces=top[1],
+  topPointsL=len(topPoints),
+  bottom=curvePolygon(points,r2,steps),
+  bottomPoints=translate3Dcoords(bottom[0],[0,0,abs(r2)],[1,1,-1]),
+  bottomFaces=offsetAllFacesBy(bottom[1],topPointsL),
+  sideFaces=[for(i=[0:roundedLp-1])[
+    i,
+    listWrap(i+1,roundedLp),
+    topPointsL + listWrap(i+1,roundedLp),
+    topPointsL + i
+  ]],
+  topCapFace=[for(i=[0:roundedLp-1])topPointsL-roundedLp+i],
+  bottomCapFace=[for(i=[0:roundedLp-1])topPointsL*2-roundedLp+i]
+)
+[
+  concat(topPoints,bottomPoints),
+  concat(topFaces,bottomFaces, sideFaces, [topCapFace], [bottomCapFace])
+];
+//example of polyRoundhedron thing, fix up soon with proper example.
+// radiiPointsbrah=[[10,0,10],[20,20,1.1],[8,7,10],[0,7,0.3],[5,3,0.1],[-4,0,1]];
+// wow2=extrudePolygonWithRadius(radiiPointsbrah,2,0.5,-0.8,steps=30);
+// polyhedron(points=wow2[0], faces=wow2[1], convexity=10);
+
+
 // testingInternals();
 module testingInternals(){
   //example of rounding random points, this has no current use but is a good demonstration
@@ -351,17 +462,17 @@ module extrudeWithRadius(length,r1=0,r2=0,fn=30){
       children();
     }
   }
-  for(i=[0:1/fn:1]){
-    translate([0,0,i*r1]){
-      linear_extrude(r1/fn){
-        offset(n1*sqrt(sq(r1)-sq(r1-i*r1))-n1*r1){
+  for(i=[0:fn-1]){
+    translate([0,0,i/fn*r1]){
+      linear_extrude(r1/fn+0.01){
+        offset(n1*sqrt(sq(r1)-sq(r1-i/fn*r1))-n1*r1){
           children();
         }
       }
     }
-    translate([0,0,length-r2+i*r2]){
-      linear_extrude(r2/fn){
-        offset(n2*sqrt(sq(r2)-sq(i*r2))-n2*r2){
+    translate([0,0,length-r2+i/fn*r2]){
+      linear_extrude(r2/fn+0.01){
+        offset(n2*sqrt(sq(r2)-sq(i/fn*r2))-n2*r2){
           children();
         }
       }
