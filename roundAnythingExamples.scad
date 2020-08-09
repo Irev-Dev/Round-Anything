@@ -9,6 +9,8 @@ basicPolyRoundExample();
 // beamChainExample();
 // mirrorPointsExample();
 // radiusExtrudeExample();
+// radiusExtrudePolygon();
+// polyRoundExtrudeExample();
 
 module basicPolyRoundExample(){
   radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
@@ -198,6 +200,11 @@ module radiusExtrudeExample(){
   radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
   extrudeWithRadius(3,0.5,0.5,50)polygon(polyRound(radiiPoints,30));
   #translate([7,4,3])extrudeWithRadius(3,-0.5,0.95,50)circle(1,$fn=30);
+}
+
+module polyRoundExtrudeExample(){
+  radiiPointsbrah=[[10,0,10],[20,20,1.1],[8,7,10],[0,7,0.3],[5,3,0.1],[-4,0,1]];
+  polyRoundExtrude(radiiPointsbrah,2,0.5,-0.8,fn=8);
 }
 
 module gridpattern(memberW = 4, sqW = 12, iter = 5, r = 3){
