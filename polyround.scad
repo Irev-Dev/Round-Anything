@@ -12,7 +12,13 @@ function translate3Dcoords(points,tran=[0,0,0],mult=[1,1,1])=[for(i=[0:len(point
   (points[i].y*mult.y)+tran.y,
   (points[i].z*mult.z)+tran.z
 ]];
-function offsetPoints(points, offset=0)=
+function offsetPolygonPoints(points, offset=0)=
+// Work sthe same as the offset does, except for the fact that instead of a 2d shape
+// It works directly on ploygon points
+// it returns the same number of points just offset into or, away from the original shape.
+// points= a series of x,y points[[x1,y1],[x2,y2],...]
+// offset= amount to offset by, negative numbers go inwards into the shape, positive numbers go out
+// return= a series of x,y points[[x1,y1],[x2,y2],...]
 let(
   isCWorCCW=sign(offset)*CWorCCW(points)*-1,
   lp=len(points)
@@ -23,18 +29,25 @@ let(
   points[listWrap(i+1,lp)],
 ],thick=offset,mode=isCWorCCW)];
 
-function curvePolygon(points,r,fn,minR=0.01)=
+function makeCurvedPartOfPolyHedron(radiiPoints,r,fn,minR=0.01)=
+// this is a private function that I'm not expecting library users to use directly
+// radiiPoints= serise of x, y, r points
+// r= radius of curve that will be put on the end of the extrusion
+// fn= amount of subdivisions
+// minR= if one of the points in radiiPoints is less than r, it's likely to converg and form a sharp edge,
+//     the min radius on this these converge edges can be controled with minR, though because of legacy reasons it can't be 0, but can be a very small number.
+// return= array of [polyhedronPoints, Polyhedronfaces, theLength of a singe layer in the curve]
 let(
-  lp=len(points),
-  radii=[for(i=[0:lp-1])points[i].z],
-  isCWorCCWOverall=CWorCCW(points),
+  lp=len(radiiPoints),
+  radii=[for(i=[0:lp-1])radiiPoints[i].z],
+  isCWorCCWOverall=CWorCCW(radiiPoints),
   dir=sign(r),
   absR=abs(r),
   fractionOffLp=1-1/fn,
   allPoints=[for(fraction=[0:1/fn:1])
     let(
       iterationOffset=dir*sqrt(sq(absR)-sq(fraction*absR))-dir*absR,
-      theOffsetPoints=offsetPoints(points,iterationOffset),
+      theOffsetPoints=offsetPolygonPoints(radiiPoints,iterationOffset),
       polyRoundOffsetPoints=[for(i=[0:lp-1])
         let(
           pointsAboutCurrent=[
@@ -52,70 +65,104 @@ let(
         )
         [theOffsetPoints[i].x, theOffsetPoints[i].y, isInternalRadius? increasingRadius: decreasingRadius]
       ],
-      newPoints=polyRound(polyRoundOffsetPoints,fn)
+      pointsForThisLayer=polyRound(polyRoundOffsetPoints,fn)
     )
-    addZcoord(newPoints,fraction*absR)
+    addZcoord(pointsForThisLayer,fraction*absR)
   ],
-  allPointsFlat=flatternArray(allPoints),
+  polyhedronPoints=flatternArray(allPoints),
   allLp=len(allPoints),
-  newLp=len(allPoints[0]),
+  layerLength=len(allPoints[0]),
   loopToSecondLastLayer=allLp-2,
   sideFaces=[for(layerIndex=[0:loopToSecondLastLayer])let(
-    currentLayeroffset=layerIndex*newLp,
-    nextLayeroffset=(layerIndex+1)*newLp,
-    layerFaces=[for(subLayerIndex=[0:newLp-1])
+    currentLayeroffset=layerIndex*layerLength,
+    nextLayeroffset=(layerIndex+1)*layerLength,
+    layerFaces=[for(subLayerIndex=[0:layerLength-1])
       [
-        currentLayeroffset+subLayerIndex, currentLayeroffset + listWrap(subLayerIndex+1,newLp), nextLayeroffset+listWrap(subLayerIndex+1,newLp), nextLayeroffset+subLayerIndex]
+        currentLayeroffset+subLayerIndex, currentLayeroffset + listWrap(subLayerIndex+1,layerLength), nextLayeroffset+listWrap(subLayerIndex+1,layerLength), nextLayeroffset+subLayerIndex]
     ]
-  )layerFaces]
+  )layerFaces],
+  polyhedronFaces=flatternArray(sideFaces)
 )
-[allPointsFlat,flatternArray(sideFaces),newLp];
+[polyhedronPoints, polyhedronFaces, layerLength];
 
 function flatternRecursion(array, init=[], currentIndex)=
+// this is a private function, init and currentIndex are for the function 
+// only for when it's calling itself, which is why there is a simplified version flatternArray that just calls this one
+// array= array to flattern by one level of nesting
+// init= the array used to cancat with the next call, only for when the function calls itself
+// currentIndex= so the function can keep track of how far it's progressed through the array, only for when it's calling itself
+// returns= flatterned array, by one level of nesting
 let(
   shouldKickOffRecursion=currentIndex==undef?1:0,
   isLastIndex=currentIndex+1==len(array)?1:0,
-  result=shouldKickOffRecursion?flatternRecursion(array,[],0):
+  flatArray=shouldKickOffRecursion?flatternRecursion(array,[],0):
     isLastIndex?concat(init,array[currentIndex]):
     flatternRecursion(array,concat(init,array[currentIndex]),currentIndex+1)
 )
-result;
-function flatternArray(array)=flatternRecursion(array);
+flatArray;
+
+function flatternArray(array)=
+// public version of flatternRecursion, has simplified params to avoid confusion
+// array= array to be flatterned
+// return= array that been flatterend by one level of nesting
+flatternRecursion(array);
 
 function offsetAllFacesBy(array,offset)=[
+  // polyhedron faces are simply a list of indeices to points, if your concat points together than you probably need to offset
+  // your faces array to points to the right place in the new list
+  // array= array of point indicies
+  // offset= number to offset all indecies by
+  // return= array of point indices (i.e. faces) with offset applied
   for(faceIndex=[0:len(array)-1])[
     for(pointIndex=[0:len(array[faceIndex])-1])array[faceIndex][pointIndex]+offset
   ]
 ];
 
-function extrudePolygonWithRadius(points,h=5,r1=1,r2=1,steps=4)=
+function extrudePolygonWithRadius(radiiPoints,h=5,r1=1,r2=1,fn=4)=
+// this basically calls makeCurvedPartOfPolyHedron twice to get the curved section of the final polyhedron
+// and then goes about assmbling them, as the side faces and the top and bottom faces are missing
+// radiiPoints= series of [x,y,r] points,
+// h= height of the extrude (total including radius sections)
+// r1,r2= define the radius at the top and bottom of the extrud respectively, negative number flange out the extrude
+// fn= number of subdivisions
+// returns= [polyhedronPoints, polyhedronFaces]
 let(
-  lp=len(points),
-  top=curvePolygon(points,r1,steps),
-  topPoints=translate3Dcoords(top[0],[0,0,h-r1]),
-  roundedLp=top[2],
-  topFaces=top[1],
-  topPointsL=len(topPoints),
-  bottom=curvePolygon(points,r2,steps),
-  bottomPoints=translate3Dcoords(bottom[0],[0,0,abs(r2)],[1,1,-1]),
-  bottomFaces=offsetAllFacesBy(bottom[1],topPointsL),
-  sideFaces=[for(i=[0:roundedLp-1])[
+  // top is the top curved part of the extrude
+  top=makeCurvedPartOfPolyHedron(radiiPoints,r1,fn),
+  topRadiusPoints=translate3Dcoords(top[0],[0,0,h-r1]),
+  singeLayerLength=top[2],
+  topRadiusFaces=top[1],
+  radiusPointsLength=len(topRadiusPoints), // is the same length as bottomRadiusPoints
+  // bottom is the bottom curved part of the extrude
+  bottom=makeCurvedPartOfPolyHedron(radiiPoints,r2,fn),
+  // Z axis needs to be multiplied by -1 to flip it so the radius is going in the right direction [1,1,-1]
+  bottomRadiusPoints=translate3Dcoords(bottom[0],[0,0,abs(r2)],[1,1,-1]),
+  // becaues the points will be all concatenated into the same array, and the bottom points come second, than
+  // the original indices the faces are points towards are wrong and need to have an offset applied to them
+  bottomRadiusFaces=offsetAllFacesBy(bottom[1],radiusPointsLength),
+  // all of the side panel of the extrusion, connecting points from the inner layers of each
+  // of the curved sections
+  sideFaces=[for(i=[0:singeLayerLength-1])[
     i,
-    listWrap(i+1,roundedLp),
-    topPointsL + listWrap(i+1,roundedLp),
-    topPointsL + i
+    listWrap(i+1,singeLayerLength),
+    radiusPointsLength + listWrap(i+1,singeLayerLength),
+    radiusPointsLength + i
   ]],
-  topCapFace=[for(i=[0:roundedLp-1])topPointsL-roundedLp+i],
-  bottomCapFace=[for(i=[0:roundedLp-1])topPointsL*2-roundedLp+i]
+  // both of these caps are simple every point from the last layer of the radius points
+  topCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength-singeLayerLength+i],
+  bottomCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength*2-singeLayerLength+i],
+  finalPolyhedronPoints=concat(topRadiusPoints,bottomRadiusPoints),
+  finalPolyhedronFaces=concat(topRadiusFaces,bottomRadiusFaces, sideFaces, [topCapFace], [bottomCapFace])
 )
 [
-  concat(topPoints,bottomPoints),
-  concat(topFaces,bottomFaces, sideFaces, [topCapFace], [bottomCapFace])
+  finalPolyhedronPoints,
+  finalPolyhedronFaces
 ];
-//example of polyRoundhedron thing, fix up soon with proper example.
-// radiiPointsbrah=[[10,0,10],[20,20,1.1],[8,7,10],[0,7,0.3],[5,3,0.1],[-4,0,1]];
-// wow2=extrudePolygonWithRadius(radiiPointsbrah,2,0.5,-0.8,steps=30);
-// polyhedron(points=wow2[0], faces=wow2[1], convexity=10);
+
+module polyRoundExtrude(radiiPoints,h=5,r1=1,r2=1,fn=10,convexity=10) {
+  polyhedronPointsNFaces=extrudePolygonWithRadius(radiiPoints,h,r1,r2,fn);
+  polyhedron(points=polyhedronPointsNFaces[0], faces=polyhedronPointsNFaces[1], convexity=convexity);
+}
 
 
 // testingInternals();
