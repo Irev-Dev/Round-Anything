@@ -16,6 +16,6 @@ The truth is radii, internal radii in particular can be a real pain to add in op
 
 ## Extra
 
-I [live streamed](https://www.youtube.com/watch?v=1Tegarwy69I&t=2s) the making of [this part](https://github.com/Irev-Dev/monitor-stand-turn-camera) using this library. I was able to make the bulk of this part quickly even with some complex radii involved.
+I [live streamed](https://www.youtube.com/watch?v=1Tegarwy69I&t=2s) the making of [this part](https://github.com/Irev-Dev/monitor-stand-turn-camera) using this library. I was able to make the bulk of this part quickly even with some complex radii involved thanks to the library.
 
 <img src="https://cdn.thingiverse.com/assets/ea/fb/83/89/57/featured_preview_camera_mount.png" width="100%" align="left"> 
