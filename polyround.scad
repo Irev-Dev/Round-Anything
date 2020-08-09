@@ -14,8 +14,8 @@ function translate3Dcoords(points,tran=[0,0,0],mult=[1,1,1])=[for(i=[0:len(point
 ]];
 function offsetPolygonPoints(points, offset=0)=
 // Work sthe same as the offset does, except for the fact that instead of a 2d shape
-// It works directly on ploygon points
-// it returns the same number of points just offset into or, away from the original shape.
+// It works directly on polygon points
+// It returns the same number of points just offset into or, away from the original shape.
 // points= a series of x,y points[[x1,y1],[x2,y2],...]
 // offset= amount to offset by, negative numbers go inwards into the shape, positive numbers go out
 // return= a series of x,y points[[x1,y1],[x2,y2],...]
@@ -34,8 +34,8 @@ function makeCurvedPartOfPolyHedron(radiiPoints,r,fn,minR=0.01)=
 // radiiPoints= serise of x, y, r points
 // r= radius of curve that will be put on the end of the extrusion
 // fn= amount of subdivisions
-// minR= if one of the points in radiiPoints is less than r, it's likely to converg and form a sharp edge,
-//     the min radius on this these converge edges can be controled with minR, though because of legacy reasons it can't be 0, but can be a very small number.
+// minR= if one of the points in radiiPoints is less than r, it's likely to converge and form a sharp edge,
+//     the min radius on these converged edges can be controled with minR, though because of legacy reasons it can't be 0, but can be a very small number.
 // return= array of [polyhedronPoints, Polyhedronfaces, theLength of a singe layer in the curve]
 let(
   lp=len(radiiPoints),
@@ -86,7 +86,7 @@ let(
 [polyhedronPoints, polyhedronFaces, layerLength];
 
 function flatternRecursion(array, init=[], currentIndex)=
-// this is a private function, init and currentIndex are for the function 
+// this is a private function, init and currentIndex are for the function's use 
 // only for when it's calling itself, which is why there is a simplified version flatternArray that just calls this one
 // array= array to flattern by one level of nesting
 // init= the array used to cancat with the next call, only for when the function calls itself
@@ -108,7 +108,7 @@ function flatternArray(array)=
 flatternRecursion(array);
 
 function offsetAllFacesBy(array,offset)=[
-  // polyhedron faces are simply a list of indeices to points, if your concat points together than you probably need to offset
+  // polyhedron faces are simply a list of indices to points, if your concat points together than you probably need to offset
   // your faces array to points to the right place in the new list
   // array= array of point indicies
   // offset= number to offset all indecies by
@@ -120,7 +120,7 @@ function offsetAllFacesBy(array,offset)=[
 
 function extrudePolygonWithRadius(radiiPoints,h=5,r1=1,r2=1,fn=4)=
 // this basically calls makeCurvedPartOfPolyHedron twice to get the curved section of the final polyhedron
-// and then goes about assmbling them, as the side faces and the top and bottom faces are missing
+// and then goes about assmbling them, as the side faces and the top and bottom face caps are missing
 // radiiPoints= series of [x,y,r] points,
 // h= height of the extrude (total including radius sections)
 // r1,r2= define the radius at the top and bottom of the extrud respectively, negative number flange out the extrude
