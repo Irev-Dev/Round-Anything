@@ -159,8 +159,8 @@ let(
   finalPolyhedronFaces
 ];
 
-module polyRoundExtrude(radiiPoints,h=5,r1=1,r2=1,fn=10,convexity=10) {
-  polyhedronPointsNFaces=extrudePolygonWithRadius(radiiPoints,h,r1,r2,fn);
+module polyRoundExtrude(radiiPoints,length=5,r1=1,r2=1,fn=10,convexity=10) {
+  polyhedronPointsNFaces=extrudePolygonWithRadius(radiiPoints,length,r1,r2,fn);
   polyhedron(points=polyhedronPointsNFaces[0], faces=polyhedronPointsNFaces[1], convexity=convexity);
 }
 
