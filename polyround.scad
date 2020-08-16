@@ -432,22 +432,23 @@ function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   mode==3, plotted counter clockwise
   */
 	let(
-    CWorCCW=CWorCCW([cen,p1,p2]),//determine the direction of rotation
+    isCWorCCW=CWorCCW([cen,p1,p2]),//determine the direction of rotation
     //determine the arc angle depending on the mode
     p1p2Angle=cosineRuleAngle(p2,cen,p1),
     arcAngle=
       mode==0?p1p2Angle:
       mode==1?p1p2Angle-360:
-      mode==2&&CWorCCW==-1?p1p2Angle:
-      mode==2&&CWorCCW== 1?p1p2Angle-360:
-      mode==3&&CWorCCW== 1?p1p2Angle:
-      mode==3&&CWorCCW==-1?p1p2Angle-360:
-      cosineRuleAngle(p2,cen,p1)
-    ,
+      mode==2&&isCWorCCW==-1?p1p2Angle:
+      mode==2&&isCWorCCW== 1?p1p2Angle-360:
+      mode==3&&isCWorCCW== 1?p1p2Angle:
+      mode==3&&isCWorCCW==-1?p1p2Angle-360:
+      cosineRuleAngle(p2,cen,p1),
     r=pointDist(p1,cen),//determine the radius
 	  p1Angle=getAngle(cen,p1) //angle of line 1
   )
-  [for(i=[0:fn]) [cos(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[0],sin(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[1]]];
+  [for(i=[0:fn])
+  let(angleIncrement=(arcAngle/fn)*i*isCWorCCW)
+  [cos(p1Angle+angleIncrement)*r+cen.x,sin(p1Angle+angleIncrement)*r+cen.y]];
 
 function translateRadiiPoints(radiiPoints,tran=[0,0],rot=0)=
 	[for(i=radiiPoints) 
@@ -539,7 +540,7 @@ function mirrorPoints(radiiPoints,rot=0,endAttenuation=[0,0])= //mirrors a list 
   concat(radiiPoints,temp2);
 
 function processRadiiPoints(rp)=
-  [for(i=[0:len(rp)-1]) 
+  [for(i=[0:len(rp)-1])
     processRadiiPoints2(rp,i)
   ];
 
@@ -663,9 +664,9 @@ function getAngle(p1,p2)=p1==p2?0:invtan(p2[0]-p1[0],p2[1]-p1[1]);
 function getMidpoint(p1,p2)=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2]; //returns the midpoint of two points
 function pointDist(p1,p2)=sqrt(abs(sq(p1[0]-p2[0])+sq(p1[1]-p2[1]))); //returns the distance between two points
 function isColinear(p1,p2,p3)=getGradient(p1,p2)==getGradient(p2,p3)?1:0;//return 1 if 3 points are colinear
-module polyline(p) {
+module polyline(p, width=0.3) {
   for(i=[0:max(0,len(p)-1)]){
-    line(p[i],p[listWrap(i+1,len(p) )]);
+    color([i*1/len(p),1-i*1/len(p),0,0.5])line(p[i],p[listWrap(i+1,len(p) )],width);
   }
 } // polyline plotter
 module line(p1, p2 ,width=0.3) { // single line plotter
