@@ -1,6 +1,7 @@
 include <polyround.scad>
 
 basicPolyRoundExample();
+// polyLineExample();
 // parametricPolyRoundExample();
 // experimentalParametricPolyRoundExample();
 // conflicResolutionExample();
@@ -9,13 +10,21 @@ basicPolyRoundExample();
 // beamChainExample();
 // mirrorPointsExample();
 // radiusExtrudeExample();
-// radiusExtrudePolygon();
 // polyRoundExtrudeExample();
 
 module basicPolyRoundExample(){
+  // polyLine is a dev helper. Aim is to show the points of the polygon and their order before
+  // you're ready to move on to polyRound and a polygon
   radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
   polygon(polyRound(radiiPoints,30));
   %translate([0,0,0.3])polygon(getpoints(radiiPoints));//transparent copy of the polgon without rounding
+}
+
+module polyLineExample() {
+  radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
+  polyline(polyRound(radiiPoints,3), 0.05);
+  translate([0,10,0])
+  polyline(radiiPoints, 0.05);
 }
 
 module parametricPolyRoundExample() {
@@ -67,7 +76,7 @@ module experimentalParametricPolyRoundExample() {
 
 module conflicResolutionExample(){
   //example of radii conflict handling and debuging feature
-  function makeRadiiPoints(r1, r2)=[[0,0,0],[0,20,r1],[20,20,r1],[20,0,0]];
+  function makeRadiiPoints(r1, r2)=[[0,0,0],[0,20,r1],[20,20,r2],[20,0,0]];
 
   // the squre shape being 20 wide, two radii of 10 both fit into the shape (just)
   translate([-25,0,0])polygon(polyRound(makeRadiiPoints(10,10),50));
@@ -79,7 +88,7 @@ module conflicResolutionExample(){
   translate([25,0,0])polygon(polyRound(makeRadiiPoints(10,40),50));
 
   //mode 2 = no radii limiting
-  translate([50,0,0])polygon(polyRound(makeRadiiPoints(15,20),50,mode=2));
+  translate([50,0,0])polygon(polyRound(makeRadiiPoints(12,20),50,mode=2));
 }
 
 module translateRadiiPointsExample() {
@@ -124,9 +133,9 @@ module beamChainExample(){
   function beamPoints(r1,r2,rStart=0,rEnd=0)=[[0,0,rStart],[2,8,0],[5,4,r1],[15,10,r2],[17,2,rEnd]];
 
   // chained lines by themselves
-  translate(){
+  translate([0,0,0]){
     radiiPoints=beamPoints(0,0);
-    for(i=[0: len(radiiPoints)]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
+    for(i=[0: len(radiiPoints)-1]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
     polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
   }
   
@@ -134,7 +143,7 @@ module beamChainExample(){
   // Add some radii to the line transitions
   translate([0,-7,0]){
     radiiPoints=beamPoints(2,1);
-    for(i=[0: len(ex3)]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
+    for(i=[0: len(radiiPoints)-1]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
     polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
   }
   
@@ -184,7 +193,8 @@ module beamChainExample(){
 
   // Define multiple shells from the the one set of points
   translate([0,-7*9,0]){
-    for(i=[0:2]){polygon(polyRound(beamChain(ex3,offset1=-1+i*0.4, offset2=-1+i*0.4+0.25),20));}
+    radiiPoints=beamPoints(2,1,rEnd=3);
+    for(i=[0:2]){polygon(polyRound(beamChain(radiiPoints,offset1=-1+i*0.4, offset2=-1+i*0.4+0.25),20));}
   }
 }
 
