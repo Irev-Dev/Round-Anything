@@ -10,7 +10,11 @@ The truth is radii, internal radii in particular can be a real pain to add in op
 
 ## Documentation
 
-[Here is an overview of the library's features](https://kurthutten.com/blog/round-anything-a-pragmatic-approach-to-openscad-design/).
+See an overview of the library in [video form](https://www.youtube.com/watch?v=laxv2wFKq8Q)
+<a href="https://www.youtube.com/watch?v=laxv2wFKq8Q"><img src="https://i.ytimg.com/vi/laxv2wFKq8Q/sddefault.jpg" width="100%" align="left"></a>
+
+
+[Written overview](https://kurthutten.com/blog/round-anything-a-pragmatic-approach-to-openscad-design/).
 
 [Full documentation of the API is here](https://kurthutten.com/blog/round-anything-api/).
 
