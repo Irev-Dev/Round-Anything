@@ -29,6 +29,12 @@ let(
   points[listWrap(i+1,lp)],
 ],thick=offset,mode=isCWorCCW)];
 
+// Reverse coordinate indices of a face in order to flip its normal
+function invertFace(face) = [ for(i=[len(face) - 1:-1:0]) face[i] ];
+
+// Apply `invertFace` to an array of faces
+function invertFaces(faces) = [ for(f=faces) invertFace(f) ];
+
 function makeCurvedPartOfPolyHedron(radiiPoints,r,fn,minR=0.01)=
 // this is a private function that I'm not expecting library users to use directly
 // radiiPoints= serise of x, y, r points
@@ -152,7 +158,7 @@ let(
   topCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength-singeLayerLength+i],
   bottomCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength*2-singeLayerLength+i],
   finalPolyhedronPoints=concat(topRadiusPoints,bottomRadiusPoints),
-  finalPolyhedronFaces=concat(topRadiusFaces,bottomRadiusFaces, sideFaces, [topCapFace], [bottomCapFace])
+  finalPolyhedronFaces=concat(topRadiusFaces, invertFaces(bottomRadiusFaces), invertFaces(sideFaces), [topCapFace], [invertFace(bottomCapFace)])
 )
 [
   finalPolyhedronPoints,
