@@ -12,6 +12,10 @@ basicPolyRoundExample();
 // radiusExtrudeExample();
 // polyRoundExtrudeExample();
 
+
+// testing 
+// testGeometries();
+
 module basicPolyRoundExample(){
   // polyLine is a dev helper. Aim is to show the points of the polygon and their order before
   // you're ready to move on to polyRound and a polygon
@@ -122,8 +126,8 @@ module translateRadiiPointsExample() {
 
 module 2dShellExample(){
   radiiPoints=[[-4,0,1],[5,3,1.5],[0,7,0.1],[8,7,10],[20,20,0.8],[10,0,10]];
-  shell2d(-0.5)polygon(polyRound(radiiPoints,30));
-  translate([0,-10,0])shell2d(-0.5){
+  linear_extrude(1)shell2d(-0.5)polygon(polyRound(radiiPoints,30));
+  translate([0,-10,0])linear_extrude(1)shell2d(-0.5){
     polygon(polyRound(radiiPoints,30));
     translate([8,8])gridpattern(memberW = 0.3, sqW = 1, iter = 17, r = 0.2);
   }
@@ -136,7 +140,7 @@ module beamChainExample(){
   translate([0,0,0]){
     radiiPoints=beamPoints(0,0);
     for(i=[0: len(radiiPoints)-1]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
-    polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
+    linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
   }
   
 
@@ -144,32 +148,32 @@ module beamChainExample(){
   translate([0,-7,0]){
     radiiPoints=beamPoints(2,1);
     for(i=[0: len(radiiPoints)-1]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
-    polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
+    linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
   }
   
   // Give make the lines beams with some thickness
   translate([0,-7*2,0]){
     radiiPoints=beamPoints(2,1);
-    polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5),20));
+    linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5),20));
   }
 
   // Add an angle to the start of the beam
   translate([0,-7*3,0]){
     radiiPoints=beamPoints(2,1);
-    polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
+    linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
   }
 
   // Put a negative radius at the start for transationing to a flat surface
   translate([0,-7*4,0]){
     radiiPoints=beamPoints(2,1,rStart=-0.7);
-    polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
+    linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=0.5, offset2=-0.5, startAngle=45),20));
   }
 
   // Define more points for a polygon to be atteched to the end of the beam chain
   clipP=[[16,1.2,0],[16,0,0],[16.5,0,0],[16.5,1,0.2],[17.5,1,0.2],[17.5,0,0],[18,0,0],[18,1.2,0]];
   translate([-15,-7*5+3,0]){
     for(i=[0:len(clipP)-1]){color("red")translate([clipP[i].x,clipP[i].y,0])cylinder(d=0.2, h=1);}
-    polygon(polyRound(clipP,20));
+    linear_extrude(1)polygon(polyRound(clipP,20));
   }
 
   // Attached to the end of the beam chain by dividing the beam paths in forward and return and
@@ -179,7 +183,7 @@ module beamChainExample(){
     forwardPath=beamChain(radiiPoints,offset1=0.5,startAngle=-15,mode=2);
     returnPath=revList(beamChain(radiiPoints,offset1=-0.5,startAngle=-15,mode=2));
     entirePath=concat(forwardPath,clipP,returnPath);
-    polygon(polyRound(entirePath,20));
+    linear_extrude(1)polygon(polyRound(entirePath,20));
   }
 
   // Add transitioning radii into the end polygong
@@ -188,13 +192,13 @@ module beamChainExample(){
     forwardPath=beamChain(radiiPoints,offset1=0.5,startAngle=-15,mode=2);
     returnPath=revList(beamChain(radiiPoints,offset1=-0.5,startAngle=-15,mode=2));
     entirePath=concat(forwardPath,clipP,returnPath);
-    polygon(polyRound(entirePath,20));
+    linear_extrude(1)polygon(polyRound(entirePath,20));
   }
 
   // Define multiple shells from the the one set of points
   translate([0,-7*9,0]){
     radiiPoints=beamPoints(2,1,rEnd=3);
-    for(i=[0:2]){polygon(polyRound(beamChain(radiiPoints,offset1=-1+i*0.4, offset2=-1+i*0.4+0.25),20));}
+    for(i=[0:2]){linear_extrude(1)polygon(polyRound(beamChain(radiiPoints,offset1=-1+i*0.4, offset2=-1+i*0.4+0.25),20));}
   }
 }
 
@@ -224,4 +228,33 @@ module gridpattern(memberW = 4, sqW = 12, iter = 5, r = 3){
 			translate([i * (sqW + memberW) + memberW, j * (sqW + memberW) + memberW])square([sqW, sqW]);
 		}
 	}
+}
+
+
+module testGeometries() {
+  // Check these shapen preview (plus "thrown together") and render correctly with each PR
+  points = [
+    [0, 10, 5],
+    [10, 0, 5],
+    [0, -10, 5],
+    [-10, 0, 5],
+  ];
+  reversedPoints = [
+    [-10, 0, 5],
+    [0, -10, 5],
+    [10, 0, 5],
+    [0, 10, 5],
+  ];
+  polyRoundExtrudeTestShape(points);
+  translate([0,20,0])polyRoundExtrudeTestShape(reversedPoints);
+
+}
+
+module polyRoundExtrudeTestShape(points) {
+  // make sure no faces are inverted
+  difference() {
+    translate([0, 0, -2.5]) polyRoundExtrude(points,r1=-1,r2=1);
+    sphere(d=9);
+    translate([0,0,7])sphere(d=9);
+  }
 }
