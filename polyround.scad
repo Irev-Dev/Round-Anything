@@ -328,13 +328,14 @@ function parallelFollow(rp,thick=4,minR=1,mode=1)=
 	concat(cen,outR);
 
 function findPoint(ang1,refpoint1,ang2,refpoint2,r=0)=
+// finds the intersection of two lines given two angles and points on those lines
   let(
     m1=tan(ang1),
     c1=refpoint1.y-m1*refpoint1.x,
 	  m2=tan(ang2),
     c2=refpoint2.y-m2*refpoint2.x,
-    outputX=(c2-c1)/(m1-m2),
-    outputY=m1*outputX+c1
+    outputX=ang1==90?refpoint1.x:ang2==90?refpoint2.x:(c2-c1)/(m1-m2),
+    outputY=ang1==90?m2*outputX+c2:m1*outputX+c1
   )
 	[outputX,outputY,r];
 
