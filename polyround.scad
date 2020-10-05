@@ -134,7 +134,7 @@ function extrudePolygonWithRadius(radiiPoints,h=5,r1=1,r2=1,fn=4)=
 let(
   // top is the top curved part of the extrude
   top=makeCurvedPartOfPolyHedron(radiiPoints,r1,fn),
-  topRadiusPoints=translate3Dcoords(top[0],[0,0,h-r1]),
+  topRadiusPoints=translate3Dcoords(top[0],[0,0,h-abs(r1)]),
   singeLayerLength=top[2],
   topRadiusFaces=top[1],
   radiusPointsLength=len(topRadiusPoints), // is the same length as bottomRadiusPoints
