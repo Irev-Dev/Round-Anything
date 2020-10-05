@@ -29,11 +29,10 @@ let(
   points[listWrap(i+1,lp)],
 ],thick=offset,mode=isCWorCCW)];
 
-// Reverse coordinate indices of a face in order to flip its normal
-function invertFace(face) = [ for(i=[len(face) - 1:-1:0]) face[i] ];
+function reverseList(list) = [ for(i=[len(list) - 1:-1:0]) list[i] ];
 
-// Apply `invertFace` to an array of faces
-function invertFaces(faces) = [ for(f=faces) invertFace(f) ];
+// Apply `reverseList` to the array of vertex indices for an array of faces
+function invertFaces(faces) = [ for(f=faces) reverseList(f) ];
 
 function makeCurvedPartOfPolyHedron(radiiPoints,r,fn,minR=0.01)=
 // this is a private function that I'm not expecting library users to use directly
@@ -158,7 +157,7 @@ let(
   topCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength-singeLayerLength+i],
   bottomCapFace=[for(i=[0:singeLayerLength-1])radiusPointsLength*2-singeLayerLength+i],
   finalPolyhedronPoints=concat(topRadiusPoints,bottomRadiusPoints),
-  finalPolyhedronFaces=concat(topRadiusFaces, invertFaces(bottomRadiusFaces), invertFaces(sideFaces), [topCapFace], [invertFace(bottomCapFace)])
+  finalPolyhedronFaces=concat(topRadiusFaces,invertFaces(bottomRadiusFaces),invertFaces(sideFaces),[topCapFace],invertFaces([bottomCapFace]))
 )
 [
   finalPolyhedronPoints,
@@ -166,7 +165,11 @@ let(
 ];
 
 module polyRoundExtrude(radiiPoints,length=5,r1=1,r2=1,fn=10,convexity=10) {
-  polyhedronPointsNFaces=extrudePolygonWithRadius(radiiPoints,length,r1,r2,fn);
+  orderedRadiiPoints = CWorCCW(radiiPoints) == 1
+    ? reverseList(radiiPoints)
+    : radiiPoints;
+
+  polyhedronPointsNFaces=extrudePolygonWithRadius(orderedRadiiPoints,length,r1,r2,fn);
   polyhedron(points=polyhedronPointsNFaces[0], faces=polyhedronPointsNFaces[1], convexity=convexity);
 }
 
