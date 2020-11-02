@@ -336,15 +336,22 @@ function parallelFollow(rp,thick=4,minR=1,mode=1)=
   )
 	concat(cen,outR);
 
+function is90or270(ang)=ang==90?1:ang==270?1:0;
+
 function findPoint(ang1,refpoint1,ang2,refpoint2,r=0)=
 // finds the intersection of two lines given two angles and points on those lines
   let(
+    overrideX=is90or270(ang1)?
+      refpoint1.x:
+      is90or270(ang2)?
+      refpoint2.x:
+      0,
     m1=tan(ang1),
     c1=refpoint1.y-m1*refpoint1.x,
 	  m2=tan(ang2),
     c2=refpoint2.y-m2*refpoint2.x,
-    outputX=ang1==90?refpoint1.x:ang2==90?refpoint2.x:(c2-c1)/(m1-m2),
-    outputY=ang1==90?m2*outputX+c2:m1*outputX+c1
+    outputX=overrideX?overrideX:(c2-c1)/(m1-m2),
+    outputY=is90or270(ang1)?m2*outputX+c2:m1*outputX+c1
   )
 	[outputX,outputY,r];
 
@@ -384,13 +391,23 @@ function beamChain(radiiPoints,offset1=0,offset2,mode=0,minR=0,startAngle,endAng
             getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2])+endAngle:
             endAngle,
     OffLn1=[for(i=[0:Lrp3]) offset1==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset1,minR,mode=CWorCCW1)],
-    OffLn2=[for(i=[0:Lrp3]) offset2==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset2b,minR,mode=CWorCCW2)],  
+    OffLn2=[for(i=[0:Lrp3]) offset2==0?radiiPoints[i+1]:parallelFollow([radiiPoints[i],radiiPoints[i+1],radiiPoints[i+2]],offset2b,minR,mode=CWorCCW2)],
+
     Rp1=abs(radiiPoints[0].z),
     Rp2=abs(radiiPoints[Lrp-1].z),
-    endP1a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn1[0],              startAngle,radiiPoints[0],     Rp1),
-    endP1b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn1[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
-    endP2a=findPoint(getAngle(radiiPoints[0],radiiPoints[1]),         OffLn2[0],              startAngle,radiiPoints[0],     Rp1),
-    endP2b=findPoint(getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]), OffLn2[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
+    
+    endP1aAngle = getAngle(radiiPoints[0],radiiPoints[1]),
+    endP1a=findPoint(endP1aAngle,         OffLn1[0],              startAngle,radiiPoints[0],     Rp1),
+
+    endP1bAngle = getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]),
+    endP1b=findPoint(endP1bAngle, OffLn1[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
+
+    endP2aAngle = getAngle(radiiPoints[0],radiiPoints[1]),
+    endP2a=findPoint(endP2aAngle,         OffLn2[0],              startAngle,radiiPoints[0],     Rp1),
+
+    endP2bAngle = getAngle(radiiPoints[Lrp-1],radiiPoints[Lrp-2]),
+    endP2b=findPoint(endP2bAngle, OffLn2[len(OffLn1)-1],  endAngle,radiiPoints[Lrp-1], Rp2),
+
     absEnda=getAngle(endP1a,endP2a),
     absEndb=getAngle(endP1b,endP2b),
     negRP1a=[cos(absEnda)*radiiPoints[0].z*10+endP1a.x,        sin(absEnda)*radiiPoints[0].z*10+endP1a.y,       0.0],
