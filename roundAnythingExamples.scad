@@ -232,7 +232,7 @@ module gridpattern(memberW = 4, sqW = 12, iter = 5, r = 3){
 
 
 module testGeometries() {
-  // Check these shapen preview (plus "thrown together") and render correctly with each PR
+  // Check these shapes preview (plus "thrown together") and render correctly with each PR
   points = [
     [0, 10, 5],
     [10, 0, 5],
@@ -247,6 +247,15 @@ module testGeometries() {
   ];
   polyRoundExtrudeTestShape(points);
   translate([0,20,0])polyRoundExtrudeTestShape(reversedPoints);
+
+  // Bug report submitted by @lopisan in issue #16, similar to #11, geometry breaks with 90 degree angles
+  didBreakWhen0=0;
+  issue16pointsa=[[0, 0, 0], [0+didBreakWhen0, 10, 0], [10, 10+didBreakWhen0, 0]];
+  translate([20,0,0])linear_extrude(1)polygon(polyRound( beamChain(issue16pointsa, offset1=1, offset2=-1), 30));
+  
+  didBreakWhen0b=1e-6;
+  issue16pointsb=[[0, 0, 0], [0+didBreakWhen0b, 10, 0], [10, 10+didBreakWhen0b, 0]];
+  translate([20,15,0])linear_extrude(1)polygon(polyRound( beamChain(issue16pointsb, offset1=1, offset2=-1), 30));
 
 }
 
