@@ -8,6 +8,10 @@ Round-Anything is primarily a set of OpenSCAD utilities that help with rounding 
 
 The truth is radii, internal radii in particular can be a real pain to add in openscad. and the more you move away from shapes with 90 degree angles the more difficult it becomes, effectively puting a complexity ceiling on parts you can produce in OpenScad. Because of how important radii in both making a apealing and strong part, reducing stress concentration etc, A library that focuses on radii as a core principle makes for a solid foundation for your parts. Furthermore the heart of the library revolves around the polygon, this is because we're leveraging the battle tested paradigm of extruding from 2d sketches of most CAD packages. I can't imagine making an OpenScad part without Round-Anything.
 
+### Quick side-note
+
+I'm currently working on a community website for "Code-CAD" (like OpenSCAD). A good way to think of it is codepen crossed with a thing repository. You can check it out at [cadhub.xyz](https://cadhub.xyz/) or it's [repo](https://github.com/Irev-Dev/cadhub).
+
 ## Documentation
 
 See an overview of the library in [video form](https://www.youtube.com/watch?v=laxv2wFKq8Q)
