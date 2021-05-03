@@ -90,7 +90,7 @@ let(
 )
 [polyhedronPoints, polyhedronFaces, layerLength];
 
-function flatternRecursion(array, init=[], currentIndex)=
+function flatternRecursion(array, init=[], currentIndex=0)=
 // this is a private function, init and currentIndex are for the function's use 
 // only for when it's calling itself, which is why there is a simplified version flatternArray that just calls this one
 // array= array to flattern by one level of nesting
