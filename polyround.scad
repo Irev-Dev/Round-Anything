@@ -165,12 +165,15 @@ let(
 ];
 
 module polyRoundExtrude(radiiPoints,length=5,r1=1,r2=1,fn=10,convexity=10) {
-  orderedRadiiPoints = CWorCCW(radiiPoints) == 1
-    ? reverseList(radiiPoints)
-    : radiiPoints;
+  assert(len(radiiPoints) > 2, str("There must be at least 3 radii points for polyRoundExtrude. ", radiiPoints, " is not long enough, you need ", 3 - len(radiiPoints), " more point/s. Example: polyRoundExtrude([[11,0,1],[20,20,1.1],[8,7,0.5]],2,0.5,-0.8,fn=8);"));
+  if(len(radiiPoints) > 2) {
+    orderedRadiiPoints = CWorCCW(radiiPoints) == 1
+      ? reverseList(radiiPoints)
+      : radiiPoints;
 
-  polyhedronPointsNFaces=extrudePolygonWithRadius(orderedRadiiPoints,length,r1,r2,fn);
-  polyhedron(points=polyhedronPointsNFaces[0], faces=polyhedronPointsNFaces[1], convexity=convexity);
+    polyhedronPointsNFaces=extrudePolygonWithRadius(orderedRadiiPoints,length,r1,r2,fn);
+    polyhedron(points=polyhedronPointsNFaces[0], faces=polyhedronPointsNFaces[1], convexity=convexity);
+  }
 }
 
 
