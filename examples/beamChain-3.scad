@@ -2,10 +2,25 @@
 
 include <Round-Anything-1.0.4/polyround.scad>
 
-function beamPoints(r1,r2,rStart=0,rEnd=0)=[[0,0,rStart],[2,8,0],[5,4,r1],[15,10,r2],[17,2,rEnd]];
+function beamPoints(r1,r2,rStart=0,rEnd=0)=[
+    [0,  0,  rStart],
+    [2,  8,  0     ],
+    [5,  4,  r1    ],
+    [15, 10, r2    ],
+    [17, 2,  rEnd  ]
+];
 
 // Define more points for a polygon to be atteched to the end of the beam chain
-clipP=[[16,1.2,0],[16,0,0],[16.5,0,0],[16.5,1,0.2],[17.5,1,0.2],[17.5,0,0],[18,0,0],[18,1.2,0]];
+clipP=[
+    [16,   1.2, 0  ],
+    [16,   0,   0  ],
+    [16.5, 0,   0  ],
+    [16.5, 1,   0.2],
+    [17.5, 1,   0.2],
+    [17.5, 0,   0  ],
+    [18,   0,   0  ],
+    [18,   1.2, 0  ]
+];
 
 linear_extrude(1){
   // end hook
