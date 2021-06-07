@@ -16,7 +16,6 @@ linear_extrude(1){
   // Add some radii to the line transitions
   translate([0,-7,0]){
     radiiPoints=beamPoints(2,1);
-    for(i=[0: len(beamPoints(2,1))]){color("red")translate([radiiPoints[i].x,radiiPoints[i].y,0])cylinder(d=0.2, h=1);}
     polygon(polyRound(beamChain(radiiPoints,offset1=0.02, offset2=-0.02),20));
   }
 
