@@ -10,7 +10,7 @@ Combined with a system of mask selectors, unionRound becomes even more versetile
 ## unionRoundMask 
 ---
 Union with round fillet at selected places.
-### module unionRoundMask(r=1, detail = 5 , q=70, epsilon = 1e-6, showMask = true) 
+### module unionRoundMask(r=1, detail = 5 , q=70, epsilon = 1e-6, showMask = true , includeOperands = true) 
 
 Masks are a method to perform unionRound on selected only areas,  
 and circumvents the previous limitation to common convex work area.  
@@ -30,6 +30,9 @@ epsilon:
 
 showMask:  
    * For debugging, try it.
+   
+includeOperands:  
+   * For debugging, render only fillet when false.
 
 ### usage:
 ````
@@ -49,7 +52,7 @@ unionRoundMask( r = 1 , detail = $preview ? 3 : 10 , q = $preview ? 30 : 70 )
 ---
 ## unionRound
 ---
-### module unionRound(r=1, detail = 5 , q=70,  epsilon = 1e-6)
+### module unionRound(r=1, detail = 5 , q=70,  epsilon = 1e-6 , includeOperands = true )
 
 Module unionRound is the underlying work module of unionRoundMask. 
 It can be used by it self, in some cases faster but more raw.
