@@ -32,20 +32,20 @@
     // Demo code
     demo= false;
     if (demo)  
-     unionRoundMask(1.5, 5) {
+     unionRoundMask( r=1.5 , detail= 5 , q=70, includeOperands = true) {
      cube([10,10,2],true);
      rotate([20,-10,0])cylinder(5,1,1,$fn=12);   
-     cube([1.5,10,6],center=true); //mask
+     translate([0,0,1.5])cube([1.5,10,3],center=true); //mask
       rotate(90)
-     cube([1.5,10,6],center=true); //mask
+     translate([0,0,1.5])cube([3,10,3],center=true); //mask
     }
     
     // end of demo code
     //
-    module unionRoundMask(r=1, detail = 5,q=70, epsilon = 1e-6, showMask = true) {
+    module unionRoundMask(r=1, detail = 5,q=70, epsilon = 1e-6, showMask = true, includeOperands = true) {
     //automask if none
     if($children <=2){
-        unionRoundMask(r,detail,q,epsilon,showMask)
+        unionRoundMask(r,detail,q,epsilon,showMask, includeOperands)
         {
             children(0);
             children(1);
@@ -57,8 +57,10 @@
             }
         else {
         union() {
-            children(0);
-            children(1);
+          if(includeOperands){ 
+                children(0);
+                children(1);
+               }
             if (showMask && $children > 2) %
                 for (i = [2: max(2, $children - 1)]) children(i);
 
@@ -67,7 +69,7 @@
                     intersection() {
                         children(i);
 
-                        unionRound(r, detail,q, epsilon) {
+                        unionRound(r, detail,q, epsilon,includeOperands) {
                             intersection() {
                                 children(0);
                                 children(i); // mask
@@ -84,10 +86,11 @@
     }
     
     
-    module unionRound(r=1, detail = 5,q=70,  epsilon = 1e-6) {
-        
+    module unionRound(r=1, detail = 5,q=70,  epsilon = 1e-6, includeOperands=true) {
+       if(includeOperands){ 
         children(0);
         children(1);
+       }
         step = 90 / detail;
       union()for (i = [0:  detail-1]) {
             {
