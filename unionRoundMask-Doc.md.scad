@@ -1,4 +1,4 @@
-#unionRoundMask
+# unionRoundMask
 module unionRoundMask(r=1, detail = 5 , q=70, epsilon = 1e-6, showMask = true) 
 
 Masks are a method to perform unionRound on selected only areas 
@@ -18,7 +18,7 @@ unionRoundMask(r=1,detail=3,q=30)
     //    ...
 }
 
-#unionRound
+# unionRound
 module unionRound(r=1, detail = 5 , q=70,  epsilon = 1e-6)
 
 Module unionRound is the underlying work module of unionRoundMask. 
@@ -32,14 +32,15 @@ unionRoundMask(r=1,detail=3,q=30)
 }
 
 
-#intersectionRound
+# intersectionRound
 module intersectionRound(r, q=70,  epsilon = 1e-6,showOperands = true) {
 Undocumented for now.
 
-//helpers
+# helpers
 module  clad(r,q=70) // speed is limited to convex operand
 module shell(r,q=70) // not in use
 module inset(r,q=20) // speed is limited to convex operand
+
 
 ## Citation        
 roundUnionMask Includes code based on examples from:
