@@ -42,14 +42,14 @@
     
     // end of demo code
     //
-    module unionRoundMask(r=1, detail = 5,q=70, epsilon = 1e-6, showMask = true, includeOperands = true) {
+    module unionRoundMask(r=1, detail = 5,q=70, epsilon = 1e-6, showMask = false, includeOperands = true) {
     //automask if none
     if($children <=2){
         unionRoundMask(r,detail,q,epsilon,showMask, includeOperands)
         {
             children(0);
             children(1);
-            clad(r,q) intersection(){
+            clad(max(r),q) intersection(){
                     children(0);
                     children(1);
                 }
@@ -92,12 +92,14 @@
         children(1);
        }
         step = 90 / detail;
+       rx=is_list(r)?r[1]:r;
+       ry=is_list(r)?r[0]:r;
       union()for (i = [0:  detail-1]) {
             {
-                x = r - sin(i * step ) * r;
-                y = r - cos(i * step ) * r;
-                xi = r - sin((i * step + step)  ) * r;
-                yi = r - cos((i * step + step)  ) * r;
+                x = rx - sin(i * step ) * rx;
+                y = ry - cos(i * step ) * ry;
+                xi = rx - sin((i * step + step)  ) * rx;
+                yi = ry - cos((i * step + step)  ) * ry;
                 color(rands(0, 1, 3, i))
                 hull() {
                     intersection() {
