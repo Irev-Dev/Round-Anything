@@ -100,7 +100,7 @@
                 y = ry - cos(i * step ) * ry;
                 xi = rx - sin((i * step + step)  ) * rx;
                 yi = ry - cos((i * step + step)  ) * ry;
-                color(rands(0, 1, 3, i))
+//                color(rands(0, 1, 3, i))
                 hull() {
                     intersection() {
                         // shell(epsilon) 
