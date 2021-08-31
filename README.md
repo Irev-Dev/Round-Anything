@@ -36,3 +36,8 @@ I [live streamed](https://www.youtube.com/watch?v=1Tegarwy69I&t=2s) the making o
 Below are some of the example parts that can be found in [roundAnythingExamples.scad](https://github.com/Irev-Dev/Round-Anything/blob/master/roundAnythingExamples.scad).
 
 <img src="https://cdn.sanity.io/images/2hqqc7om/production/2dba6301d1f25b1c45a634058b280b52fa713b60-1920x1080.png?w=1920&h=1000&fit=crop" width="100%" align="left">
+
+## Citation        
+roundUnionMask Includes code based on examples from:
+    Kogan, Jonathan (2017) "A New Computationally Efficient Method for Spacing n Points on a Sphere," Rose-Hulman Undergraduate Mathematics Journal: Vol. 18 : Iss. 2 , Article 5.
+    Available at: [https://scholar.rose-hulman.edu/rhumj/vol18/iss2/5]
