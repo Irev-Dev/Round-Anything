@@ -1,4 +1,4 @@
-// polyRound example
+// polyRound example per https://learn.cadhub.xyz/docs/round-anything/api-reference#polyround
 
 include <Round-Anything-1.0.4/polyround.scad>
 
