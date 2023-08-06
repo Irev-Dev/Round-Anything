@@ -451,7 +451,7 @@ function CWorCCW(p)=
       (p[listWrap(i+0,Lp)].x-p[listWrap(i+1,Lp)].x)*(p[listWrap(i+0,Lp)].y+p[listWrap(i+1,Lp)].y)
     ]
   )  
-  sign(sum(e));
+  sign(polySum(e));
 
 function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   /* This function plots an arc from p1 to p2 with fn increments using the cen as the centre of the arc.
@@ -685,8 +685,8 @@ function cosineRuleAngle(p1,p2,p3)=
   )
   acos((sq(p23)+sq(p12)-sq(p13))/(2*p23*p12));
 
-function sum(list, idx = 0, result = 0) = 
-	idx >= len(list) ? result : sum(list, idx + 1, result + list[idx]);
+function polySum(list, idx = 0, result = 0) = 
+	idx >= len(list) ? result : polySum(list, idx + 1, result + list[idx]);
 
 function sq(x)=x*x;
 function getGradient(p1,p2)=(p2.y-p1.y)/(p2.x-p1.x);
